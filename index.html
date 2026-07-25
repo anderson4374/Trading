@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>MNQ Cockpit</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: radial-gradient(120% 140% at 15% 0%, #1a2036 0%, #0b0e17 45%, #06070c 100%);
+  color: #F0F3F8;
+  min-height: 100vh;
+  padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 16px) 60px env(safe-area-inset-left, 16px);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wrap { max-width: 720px; margin: 0 auto; }
+
+.eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: #6FE3D6;
+  text-transform: uppercase;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 4px 4px;
+}
+
+.clock {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: #8890A6;
+}
+
+h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: -0.01em;
+  padding: 2px 4px 6px;
+}
+
+.stop-status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: #7C8698;
+  padding: 0 4px 20px;
+}
+
+.stop-status .n { color: #6FE3D6; font-weight: 700; }
+
+.section-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7C8698;
+  margin: 22px 4px 10px;
+}
+
+.rules-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.rule-chip {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 8px 10px;
+  text-align: center;
+}
+
+.rule-chip .val {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 14px;
+  color: #6FE3D6;
+}
+
+.rule-chip .lab {
+  font-size: 10px;
+  color: #6B7387;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 2px;
+}
+
+.trade-card {
+  background: linear-gradient(145deg, #232c48, #171e33);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-left: 4px solid #3A4460;
+  border-radius: 16px;
+  padding: 16px 18px 18px;
+  margin-bottom: 12px;
+  transition: opacity 0.3s ease, border-left-color 0.3s ease;
+}
+
+.trade-card.in-progress { border-left-color: #FFB020; }
+.trade-card.go { border-left-color: #29D398; box-shadow: 0 0 0 1px rgba(41,211,152,0.25); }
+.trade-card.stopped { border-left-color: #FF4757; }
+.trade-card.closed-clean { border-left-color: #29D398; }
+.trade-card.awaiting { opacity: 0.32; pointer-events: none; }
+
+.trade-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.trade-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.badge {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.07);
+  color: #7C8698;
+  transition: all 0.25s ease;
+}
+
+.badge.go {
+  background: linear-gradient(135deg, #29D398, #14B37E);
+  color: #032B1E;
+  font-size: 17px;
+  padding: 9px 22px;
+  box-shadow: 0 0 0 3px rgba(41,211,152,0.3);
+}
+
+.badge.stopped { background: linear-gradient(135deg, #FF4757, #E6294B); color: #3A0510; }
+.badge.closed-clean { background: linear-gradient(135deg, #29D398, #1DA97A); color: #032B1E; }
+.badge.locked { background: rgba(255,255,255,0.04); color: #4A5268; }
+
+.chips {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+  user-select: none;
+}
+
+.chip.on { background: rgba(45,225,252,0.12); border-color: rgba(45,225,252,0.45); }
+.chip.pending { opacity: 0.4; cursor: default; }
+
+.chip-step {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #5B6478;
+  width: 16px;
+  flex-shrink: 0;
+}
+
+.chip.on .chip-step { color: #2DE1FC; }
+
+.chip-box {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1.5px solid #4A5268;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.chip.on .chip-box { background: #2DE1FC; border-color: #2DE1FC; }
+.chip-box svg { display: none; width: 13px; height: 13px; }
+.chip.on .chip-box svg { display: block; }
+
+.chip-label { font-size: 13px; font-weight: 500; color: #C7CEDC; line-height: 1.3; }
+.chip.on .chip-label { color: #EAFBFF; }
+.chip.pending .chip-label { color: #7C8698; }
+
+.resolve-row {
+  display: flex;
+  gap: 10px;
+}
+
+.resolve-btn {
+  flex: 1;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 12px 10px;
+  border-radius: 10px;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.15s ease, opacity 0.2s ease;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: #6B7387;
+}
+
+.resolve-btn:active { transform: scale(0.97); }
+.resolve-btn.awaiting-entry { opacity: 0.35; pointer-events: none; }
+
+.resolve-btn.stop-btn.armed {
+  background: linear-gradient(135deg, #FF4757, #E6294B);
+  border-color: transparent;
+  color: #3A0510;
+}
+
+.resolve-btn.clean-btn.armed {
+  background: linear-gradient(135deg, #29D398, #1DA97A);
+  border-color: transparent;
+  color: #032B1E;
+}
+
+.resolve-btn.selected {
+  transform: none;
+}
+
+.resolved-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.resolved-tag.stopped { background: rgba(255,71,87,0.14); color: #FF8394; border: 1px solid rgba(255,71,87,0.4); }
+.resolved-tag.closed-clean { background: rgba(41,211,152,0.14); color: #5DE8BC; border: 1px solid rgba(41,211,152,0.4); }
+
+.closed-banner {
+  margin: 4px 0 14px;
+  background: linear-gradient(135deg, #FF4757, #D6293D);
+  border: 2px solid #FFD23F;
+  border-radius: 14px;
+  padding: 18px 18px;
+  display: none;
+}
+
+.closed-banner.show { display: block; }
+
+.closed-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 19px;
+  color: #FFFFFF;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.closed-steps { font-size: 14px; color: #FFECEE; line-height: 1.7; font-weight: 600; }
+
+.top-banner {
+  margin: 4px 0 20px;
+  background: linear-gradient(135deg, #FF5A5F, #E31B3D);
+  border: 2px solid #FFD23F;
+  border-radius: 16px;
+  padding: 20px 20px;
+  display: none;
+  box-shadow: 0 0 0 3px rgba(255,71,87,0.35);
+  animation: pulse-glow 1.8s ease-in-out infinite;
+}
+
+.top-banner.show { display: block; }
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(255,71,87,0.35); }
+  50% { box-shadow: 0 0 0 9px rgba(255,71,87,0.12); }
+}
+
+.top-banner-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: #FFFFFF;
+  margin-bottom: 8px;
+}
+
+.top-banner-steps {
+  font-size: 14px;
+  color: #FFECEE;
+  line-height: 1.7;
+  font-weight: 700;
+}
+
+.footer-note {
+  text-align: center;
+  font-size: 12px;
+  color: #545C70;
+  margin-top: 22px;
+  padding: 0 20px;
+  line-height: 1.6;
+}
+
+.reset-btn {
+  display: block;
+  width: 100%;
+  margin: 22px auto 0;
+  background: rgba(255,71,87,0.1);
+  border: 1.5px solid rgba(255,71,87,0.5);
+  color: #FF8394;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 13px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.reset-btn:active { transform: scale(0.98); background: rgba(255,71,87,0.18); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">
+    <span>/MNQ &middot; live session</span>
+    <span class="clock" id="clock">--:--</span>
+  </div>
+  <h1>Pre-trade cockpit</h1>
+  <div class="stop-status" id="stopStatus">Stops today: <span class="n">0 / 2</span></div>
+
+  <div class="top-banner" id="topBanner">
+    <div class="top-banner-title">Day is over &mdash; no exceptions</div>
+    <div class="top-banner-steps">Close platform &rarr; walk away &rarr; breathe &rarr; read counter-script &rarr; no return for 2 hours.</div>
+  </div>
+
+  <div class="rules-row">
+    <div class="rule-chip"><div class="val">2</div><div class="lab">contracts</div></div>
+    <div class="rule-chip"><div class="val">40pt</div><div class="lab">stop</div></div>
+    <div class="rule-chip"><div class="val">60pt</div><div class="lab">target</div></div>
+  </div>
+
+  <div id="trades"></div>
+
+  <div class="footer-note">
+    Steps unlock in order &mdash; zone, then SMA20, then SMA200, then signal. Each trade must be closed (stopped out or clean) before the next one unlocks. Two stop-outs, anywhere, ends the day.
+  </div>
+
+  <button class="reset-btn" id="resetBtn">Reset for new session</button>
+
+</div>
+
+<script>
+const CHECK_SVG = '<svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.5L13 4.5" stroke="#08202B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+const CONDITIONS = [
+  { key: 'zone', label: 'Zone &mdash; drawn at 9:25 am' },
+  { key: 'sma20', label: 'SMA20 confirms zone' },
+  { key: 'sma200', label: 'SMA200 confirms zone' },
+  { key: 'signal', label: 'Signal &mdash; hammer or engulfing' },
+];
+
+function todayKey() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return 'mnq-cockpit:' + y + '-' + m + '-' + day;
+}
+
+function freshTrade() {
+  return { zone: false, sma20: false, sma200: false, signal: false, outcome: null };
+}
+
+let state = { trades: [freshTrade(), freshTrade(), freshTrade()] };
+
+const STORAGE_KEY = todayKey();
+
+async function loadState() {
+  try {
+    const result = await window.storage.get(STORAGE_KEY);
+    if (result && result.value) {
+      state = JSON.parse(result.value);
+    }
+  } catch (e) {
+    console.log('No saved state yet, starting fresh.');
+  }
+  render();
+}
+
+async function saveState() {
+  try {
+    await window.storage.set(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    console.error('Storage save failed', e);
+  }
+}
+
+function totalStops() {
+  return state.trades.filter(t => t.outcome === 'stopped').length;
+}
+
+function renderTrades() {
+  const container = document.getElementById('trades');
+  container.innerHTML = '';
+  const stops = totalStops();
+  const dayLocked = stops >= 2;
+
+  state.trades.forEach((trade, i) => {
+    const confirmedCount = CONDITIONS.filter(c => trade[c.key]).length;
+    const allGo = confirmedCount === CONDITIONS.length;
+    const prevResolved = i === 0 || state.trades[i - 1].outcome !== null;
+    const isNextUp = trade.outcome === null && prevResolved;
+    const dayJustEnded = dayLocked && isNextUp;
+    const cardAwaiting = !prevResolved;
+
+    let statusClass = '';
+    if (trade.outcome === 'stopped') statusClass = ' stopped';
+    else if (trade.outcome === 'clean') statusClass = ' closed-clean';
+    else if (allGo) statusClass = ' go';
+    else if (confirmedCount > 0) statusClass = ' in-progress';
+
+    const card = document.createElement('div');
+    card.className = 'trade-card' + statusClass + (cardAwaiting ? ' awaiting' : '');
+
+    const head = document.createElement('div');
+    head.className = 'trade-head';
+    let badgeClass = '', badgeText = 'NO TRADE';
+    if (trade.outcome === 'stopped') { badgeClass = ' stopped'; badgeText = 'STOPPED OUT'; }
+    else if (trade.outcome === 'clean') { badgeClass = ' closed-clean'; badgeText = 'CLOSED CLEAN'; }
+    else if (cardAwaiting) { badgeClass = ' locked'; badgeText = 'LOCKED'; }
+    else if (dayJustEnded) { badgeClass = ' locked'; badgeText = 'SESSION CLOSED'; }
+    else if (allGo) { badgeClass = ' go'; badgeText = 'GO'; }
+    head.innerHTML = '<span class="trade-name">Trade ' + (i + 1) + '</span><span class="badge' + badgeClass + '">' + badgeText + '</span>';
+    card.appendChild(head);
+
+    if (dayJustEnded) {
+      const banner = document.createElement('div');
+      banner.className = 'closed-banner show';
+      banner.innerHTML = '<div class="closed-title">&#9888; Day is over &mdash; no exceptions</div><div class="closed-steps">Close platform &rarr; walk away &rarr; breathe &rarr; read counter-script &rarr; no return for 2 hours.</div>';
+      card.appendChild(banner);
+      container.appendChild(card);
+      return;
+    }
+
+    const chips = document.createElement('div');
+    chips.className = 'chips';
+    const checklistLocked = trade.outcome !== null || cardAwaiting;
+    CONDITIONS.forEach((c, idx) => {
+      const priorConfirmed = CONDITIONS.slice(0, idx).every(prev => trade[prev.key]);
+      const reachable = !checklistLocked && (idx === 0 || priorConfirmed);
+      const isPending = !reachable && !trade[c.key];
+
+      const chip = document.createElement('div');
+      chip.className = 'chip' + (trade[c.key] ? ' on' : '') + (isPending ? ' pending' : '');
+      chip.innerHTML = '<span class="chip-step">' + (idx + 1) + '</span><span class="chip-box">' + CHECK_SVG + '</span><span class="chip-label">' + c.label + '</span>';
+
+      chip.addEventListener('click', () => {
+        if (checklistLocked) return;
+        if (isPending) return;
+        if (trade[c.key]) {
+          CONDITIONS.slice(idx).forEach(later => { trade[later.key] = false; });
+        } else {
+          trade[c.key] = true;
+        }
+        saveState();
+        renderTrades();
+      });
+      chips.appendChild(chip);
+    });
+    card.appendChild(chips);
+
+    if (trade.outcome === null) {
+      const row = document.createElement('div');
+      row.className = 'resolve-row';
+      const canResolve = allGo && !cardAwaiting;
+
+      const stopBtn = document.createElement('div');
+      stopBtn.className = 'resolve-btn stop-btn' + (canResolve ? '' : ' awaiting-entry');
+      stopBtn.textContent = 'Stopped out';
+      stopBtn.addEventListener('click', () => {
+        if (!canResolve) return;
+        trade.outcome = 'stopped';
+        saveState();
+        renderTrades();
+      });
+
+      const cleanBtn = document.createElement('div');
+      cleanBtn.className = 'resolve-btn clean-btn' + (canResolve ? '' : ' awaiting-entry');
+      cleanBtn.textContent = 'Closed clean';
+      cleanBtn.addEventListener('click', () => {
+        if (!canResolve) return;
+        trade.outcome = 'clean';
+        saveState();
+        renderTrades();
+      });
+
+      row.appendChild(stopBtn);
+      row.appendChild(cleanBtn);
+      card.appendChild(row);
+    } else {
+      const tag = document.createElement('div');
+      tag.className = 'resolved-tag ' + (trade.outcome === 'stopped' ? 'stopped' : 'closed-clean');
+      tag.textContent = trade.outcome === 'stopped' ? 'Stop ' + (state.trades.slice(0, i + 1).filter(t => t.outcome === 'stopped').length) + ' of 2 logged' : 'Trade closed clean';
+      card.appendChild(tag);
+    }
+
+    container.appendChild(card);
+  });
+}
+
+function renderStopStatus() {
+  const stops = totalStops();
+  document.getElementById('stopStatus').innerHTML = 'Stops today: <span class="n">' + stops + ' / 2</span>';
+  document.getElementById('topBanner').className = 'top-banner' + (stops >= 2 ? ' show' : '');
+}
+
+function render() {
+  renderStopStatus();
+  renderTrades();
+}
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  state = { trades: [freshTrade(), freshTrade(), freshTrade()] };
+  saveState();
+  render();
+});
+
+function updateClock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2, '0');
+  const m = String(now.getMinutes()).padStart(2, '0');
+  document.getElementById('clock').textContent = h + ':' + m;
+}
+updateClock();
+setInterval(updateClock, 15000);
+
+loadState();
+</script>
+</body>
+</html>
