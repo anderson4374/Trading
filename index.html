@@ -74,7 +74,7 @@ body {
   background: var(--page-bg);
   color: var(--text-primary);
   min-height: 100vh;
-  padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 16px) 110px env(safe-area-inset-left, 16px);
+  padding: calc(20px + env(safe-area-inset-top, 0px)) calc(22px + env(safe-area-inset-right, 0px)) 110px calc(22px + env(safe-area-inset-left, 0px));
   -webkit-tap-highlight-color: transparent;
 }
 
