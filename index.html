@@ -11,17 +11,70 @@
 <meta name="apple-mobile-web-app-title" content="Checklist">
 <meta name="theme-color" content="#0b0e17">
 
+
+
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+
+:root {
+  --page-bg: radial-gradient(120% 140% at 15% 0%, #1a2036 0%, #0b0e17 45%, #06070c 100%);
+  --text-primary: #F0F3F8;
+  --text-body: #C7CEDC;
+  --text-muted: #7C8698;
+  --text-dim: #5B6478;
+  --text-faint: #545C70;
+  --text-oncolor: #EAFBFF;
+  --accent-teal: #6FE3D6;
+  --card-grad-a: #232c48;
+  --card-grad-b: #171e33;
+  --card-nested-a: #1c2338;
+  --card-nested-b: #141a2b;
+  --card-border-default: #3A4460;
+  --checkbox-border: #4A5268;
+  --tab-inactive: #B8C0D4;
+  --tab-bar-bg: rgba(18,21,32,0.85);
+  --surface-1: rgba(255,255,255,0.04);
+  --surface-2: rgba(255,255,255,0.05);
+  --surface-3: rgba(255,255,255,0.07);
+  --border-1: rgba(255,255,255,0.08);
+  --border-2: rgba(255,255,255,0.1);
+  --border-3: rgba(255,255,255,0.14);
+}
+
+[data-theme="light"] {
+  --page-bg: radial-gradient(120% 140% at 15% 0%, #EEF1FB 0%, #F6F8FC 45%, #FFFFFF 100%);
+  --text-primary: #12141C;
+  --text-body: #333947;
+  --text-muted: #676F82;
+  --text-dim: #8991A4;
+  --text-faint: #98A0B2;
+  --text-oncolor: #063542;
+  --accent-teal: #0E9E8E;
+  --card-grad-a: #FFFFFF;
+  --card-grad-b: #F1F3F9;
+  --card-nested-a: #FBFCFE;
+  --card-nested-b: #EEF1F7;
+  --card-border-default: #D7DCE8;
+  --checkbox-border: #C3C9D6;
+  --tab-inactive: #6B7387;
+  --tab-bar-bg: rgba(255,255,255,0.85);
+  --surface-1: rgba(15,23,42,0.035);
+  --surface-2: rgba(15,23,42,0.045);
+  --surface-3: rgba(15,23,42,0.06);
+  --border-1: rgba(15,23,42,0.08);
+  --border-2: rgba(15,23,42,0.09);
+  --border-3: rgba(15,23,42,0.12);
+}
+
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
   font-family: 'Inter', sans-serif;
-  background: radial-gradient(120% 140% at 15% 0%, #1a2036 0%, #0b0e17 45%, #06070c 100%);
-  color: #F0F3F8;
+  background: var(--page-bg);
+  color: var(--text-primary);
   min-height: 100vh;
-  padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 16px) 60px env(safe-area-inset-left, 16px);
+  padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 16px) 110px env(safe-area-inset-left, 16px);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -31,7 +84,7 @@ body {
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
   letter-spacing: 0.14em;
-  color: #6FE3D6;
+  color: var(--accent-teal);
   text-transform: uppercase;
   display: flex;
   justify-content: space-between;
@@ -39,11 +92,24 @@ body {
   padding: 18px 4px 4px;
 }
 
-.clock {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
-  color: #8890A6;
+.clock { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-muted); }
+
+.theme-toggle {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border-1);
+  border-radius: 50%;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s ease, color 0.2s ease;
 }
+
+.theme-toggle svg { width: 14px; height: 14px; }
 
 h1 {
   font-family: 'Space Grotesk', sans-serif;
@@ -53,33 +119,8 @@ h1 {
   padding: 2px 4px 6px;
 }
 
-.stop-status {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
-  color: #7C8698;
-  padding: 0 4px 20px;
-}
-
-.stop-status .n { color: #6FE3D6; font-weight: 700; }
-
-.closed-banner.reason-profit {
-  background: linear-gradient(135deg, #29D398, #189C6E);
-  border: 2px solid #FFD23F;
-}
-
-.top-banner.reason-profit {
-  background: linear-gradient(135deg, #34E0A1, #1BA97A);
-  border: 2px solid #FFD23F;
-  box-shadow: 0 0 0 3px rgba(41,211,152,0.35);
-  animation: pulse-glow-green 1.8s ease-in-out infinite;
-}
-
-@keyframes pulse-glow-green {
-  0%, 100% { box-shadow: 0 0 0 3px rgba(41,211,152,0.35); }
-  50% { box-shadow: 0 0 0 9px rgba(41,211,152,0.12); }
-}
-
-.stop-status .streak { color: #5DE8BC; font-weight: 700; }
+.stop-status { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-muted); padding: 0 4px 20px; }
+.stop-status .n { color: var(--accent-teal); font-weight: 700; }
 
 .section-label {
   font-family: 'Space Grotesk', sans-serif;
@@ -87,285 +128,301 @@ h1 {
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #7C8698;
+  color: var(--text-muted);
   margin: 22px 4px 10px;
 }
 
-.rules-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 8px;
-}
+.rules-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 8px; }
+.rule-chip { background: var(--surface-2); border: 1px solid var(--border-1); border-radius: 10px; padding: 8px 10px; text-align: center; }
+.rule-chip .val { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 14px; color: var(--accent-teal); }
+.rule-chip .lab { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
 
-.rule-chip {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 10px;
-  padding: 8px 10px;
-  text-align: center;
+.premarket-card {
+  background: linear-gradient(145deg, var(--card-grad-a), var(--card-grad-b));
+  border: 1px solid var(--border-3);
+  border-left: 4px solid var(--card-border-default);
+  border-radius: 16px;
+  padding: 16px 18px 18px;
+  margin-bottom: 14px;
+  transition: border-left-color 0.3s ease;
 }
+.premarket-card.complete { border-left-color: #29D398; }
 
-.rule-chip .val {
-  font-family: 'JetBrains Mono', monospace;
-  font-weight: 700;
-  font-size: 14px;
-  color: #6FE3D6;
+.pm-item {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-1);
+  border-radius: 10px; padding: 12px 12px;
+  cursor: pointer; transition: background 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+  user-select: none; margin-bottom: 8px;
 }
+.pm-item:last-child { margin-bottom: 0; }
+.pm-item.on { background: rgba(45,225,252,0.12); border-color: rgba(45,225,252,0.45); }
+.pm-item.pending { opacity: 0.4; cursor: default; }
 
-.rule-chip .lab {
-  font-size: 10px;
-  color: #6B7387;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-top: 2px;
+.pm-box, .chip-box {
+  width: 20px; height: 20px; border-radius: 6px;
+  border: 1.5px solid var(--checkbox-border); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s ease;
 }
+.pm-item.on .pm-box, .chip.on .chip-box { background: #2DE1FC; border-color: #2DE1FC; }
+.pm-box svg, .chip-box svg { display: none; width: 13px; height: 13px; }
+.pm-item.on .pm-box svg, .chip.on .chip-box svg { display: block; }
+
+.pm-label { font-size: 13px; font-weight: 500; color: var(--text-body); line-height: 1.4; }
+.pm-item.on .pm-label { color: var(--text-oncolor); }
+.pm-item.pending .pm-label { color: var(--text-muted); }
+
+.trades-lockwrap.locked { opacity: 0.3; pointer-events: none; }
+.premarket-gate-note { text-align: center; font-size: 12px; color: var(--text-muted); padding: 10px 4px 4px; }
 
 .trade-card {
-  background: linear-gradient(145deg, #232c48, #171e33);
-  border: 1px solid rgba(255,255,255,0.14);
-  border-left: 4px solid #3A4460;
+  background: linear-gradient(145deg, var(--card-grad-a), var(--card-grad-b));
+  border: 1px solid var(--border-3);
+  border-left: 4px solid var(--card-border-default);
   border-radius: 16px;
   padding: 16px 18px 18px;
   margin-bottom: 12px;
   transition: opacity 0.3s ease, border-left-color 0.3s ease;
 }
-
 .trade-card.in-progress { border-left-color: #FFB020; }
 .trade-card.go { border-left-color: #29D398; box-shadow: 0 0 0 1px rgba(41,211,152,0.25); }
 .trade-card.stopped { border-left-color: #FF4757; }
 .trade-card.closed-clean { border-left-color: #29D398; }
 .trade-card.awaiting { opacity: 0.32; pointer-events: none; }
 
-.trade-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
-}
-
-.trade-name {
-  font-family: 'Space Grotesk', sans-serif;
-  font-weight: 600;
-  font-size: 16px;
-}
+.trade-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.trade-name { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 16px; }
 
 .badge {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.07);
-  color: #7C8698;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.06em;
+  padding: 6px 14px; border-radius: 999px;
+  background: var(--surface-3); color: var(--text-muted);
   transition: all 0.25s ease;
 }
-
-.badge.go {
-  background: linear-gradient(135deg, #29D398, #14B37E);
-  color: #032B1E;
-  font-size: 17px;
-  padding: 9px 22px;
-  box-shadow: 0 0 0 3px rgba(41,211,152,0.3);
-}
-
+.badge.go { background: linear-gradient(135deg, #29D398, #14B37E); color: #032B1E; font-size: 17px; padding: 9px 22px; box-shadow: 0 0 0 3px rgba(41,211,152,0.3); }
 .badge.stopped { background: linear-gradient(135deg, #FF4757, #E6294B); color: #3A0510; }
 .badge.closed-clean { background: linear-gradient(135deg, #29D398, #1DA97A); color: #032B1E; }
-.badge.locked { background: rgba(255,255,255,0.04); color: #4A5268; }
+.badge.locked { background: var(--surface-1); color: var(--checkbox-border); }
 
-.chips {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-
+.chips { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
 .chip {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 10px;
-  padding: 10px 12px;
-  cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
-  user-select: none;
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface-1); border: 1px solid var(--border-1);
+  border-radius: 10px; padding: 10px 12px; cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, opacity 0.2s ease; user-select: none;
 }
-
 .chip.on { background: rgba(45,225,252,0.12); border-color: rgba(45,225,252,0.45); }
 .chip.pending { opacity: 0.4; cursor: default; }
-
-.chip-step {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  font-weight: 700;
-  color: #5B6478;
-  width: 16px;
-  flex-shrink: 0;
-}
-
+.chip-step { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: var(--text-dim); width: 16px; flex-shrink: 0; }
 .chip.on .chip-step { color: #2DE1FC; }
+.chip-label { font-size: 13px; font-weight: 500; color: var(--text-body); line-height: 1.3; }
+.chip.on .chip-label { color: var(--text-oncolor); }
+.chip.pending .chip-label { color: var(--text-muted); }
 
-.chip-box {
-  width: 20px;
-  height: 20px;
-  border-radius: 6px;
-  border: 1.5px solid #4A5268;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.chip.on .chip-box { background: #2DE1FC; border-color: #2DE1FC; }
-.chip-box svg { display: none; width: 13px; height: 13px; }
-.chip.on .chip-box svg { display: block; }
-
-.chip-label { font-size: 13px; font-weight: 500; color: #C7CEDC; line-height: 1.3; }
-.chip.on .chip-label { color: #EAFBFF; }
-.chip.pending .chip-label { color: #7C8698; }
-
-.resolve-row {
-  display: flex;
-  gap: 10px;
-}
-
+.resolve-row { display: flex; gap: 10px; }
 .resolve-btn {
-  flex: 1;
-  font-family: 'Space Grotesk', sans-serif;
-  font-weight: 600;
-  font-size: 13px;
-  padding: 12px 10px;
-  border-radius: 10px;
-  text-align: center;
-  cursor: pointer;
-  user-select: none;
-  transition: transform 0.15s ease, opacity 0.2s ease;
-  border: 1px solid rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.04);
-  color: #6B7387;
+  flex: 1; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 13px;
+  padding: 12px 10px; border-radius: 10px; text-align: center; cursor: pointer;
+  user-select: none; transition: transform 0.15s ease, opacity 0.2s ease;
+  border: 1px solid var(--border-2); background: var(--surface-1); color: var(--text-muted);
 }
-
 .resolve-btn:active { transform: scale(0.97); }
 .resolve-btn.awaiting-entry { opacity: 0.35; pointer-events: none; }
+.resolve-btn.stop-btn { background: linear-gradient(135deg, rgba(255,71,87,0.22), rgba(230,41,75,0.14)); border-color: rgba(255,71,87,0.5); color: #FF8394; }
+.resolve-btn.clean-btn { background: linear-gradient(135deg, rgba(41,211,152,0.22), rgba(29,169,122,0.14)); border-color: rgba(41,211,152,0.5); color: #5DE8BC; }
+.resolve-btn.awaiting-entry.stop-btn, .resolve-btn.awaiting-entry.clean-btn { background: var(--surface-1); border-color: var(--border-2); color: var(--text-muted); }
 
-.resolve-btn.stop-btn {
-  background: linear-gradient(135deg, rgba(255,71,87,0.22), rgba(230,41,75,0.14));
-  border-color: rgba(255,71,87,0.5);
-  color: #FF8394;
-}
-
-.resolve-btn.clean-btn {
-  background: linear-gradient(135deg, rgba(41,211,152,0.22), rgba(29,169,122,0.14));
-  border-color: rgba(41,211,152,0.5);
-  color: #5DE8BC;
-}
-
-.resolve-btn.awaiting-entry.stop-btn,
-.resolve-btn.awaiting-entry.clean-btn {
-  background: rgba(255,255,255,0.04);
-  border-color: rgba(255,255,255,0.1);
-  color: #6B7387;
-}
-
-.resolved-tag {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  font-weight: 700;
-  text-align: center;
-  padding: 10px;
-  border-radius: 10px;
-}
-
+.resolved-tag { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; text-align: center; padding: 10px; border-radius: 10px; }
 .resolved-tag.stopped { background: rgba(255,71,87,0.14); color: #FF8394; border: 1px solid rgba(255,71,87,0.4); }
 .resolved-tag.closed-clean { background: rgba(41,211,152,0.14); color: #5DE8BC; border: 1px solid rgba(41,211,152,0.4); }
 
-.closed-banner {
-  margin: 4px 0 14px;
-  background: linear-gradient(135deg, #FF4757, #D6293D);
-  border: 2px solid #FFD23F;
-  border-radius: 14px;
-  padding: 18px 18px;
-  display: none;
-}
-
+.closed-banner { margin: 4px 0 14px; background: linear-gradient(135deg, #FF4757, #D6293D); border: 2px solid #FFD23F; border-radius: 14px; padding: 18px 18px; display: none; }
 .closed-banner.show { display: block; }
-
-.closed-title {
-  font-family: 'Space Grotesk', sans-serif;
-  font-weight: 700;
-  font-size: 19px;
-  color: #FFFFFF;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
+.closed-banner.reason-profit { background: linear-gradient(135deg, #29D398, #189C6E); border: 2px solid #FFD23F; }
+.closed-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 19px; color: #FFFFFF; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
 .closed-steps { font-size: 14px; color: #FFECEE; line-height: 1.7; font-weight: 600; }
 
 .top-banner {
-  margin: 4px 0 20px;
-  background: linear-gradient(135deg, #FF5A5F, #E31B3D);
-  border: 2px solid #FFD23F;
-  border-radius: 16px;
-  padding: 20px 20px;
-  display: none;
-  box-shadow: 0 0 0 3px rgba(255,71,87,0.35);
+  margin: 4px 0 20px; background: linear-gradient(135deg, #FF5A5F, #E31B3D);
+  border: 2px solid #FFD23F; border-radius: 16px; padding: 20px 20px;
+  display: none; box-shadow: 0 0 0 3px rgba(255,71,87,0.35);
   animation: pulse-glow 1.8s ease-in-out infinite;
 }
-
 .top-banner.show { display: block; }
+.top-banner.reason-profit { background: linear-gradient(135deg, #34E0A1, #1BA97A); box-shadow: 0 0 0 3px rgba(41,211,152,0.35); animation: pulse-glow-green 1.8s ease-in-out infinite; }
+@keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 0 3px rgba(255,71,87,0.35); } 50% { box-shadow: 0 0 0 9px rgba(255,71,87,0.12); } }
+@keyframes pulse-glow-green { 0%, 100% { box-shadow: 0 0 0 3px rgba(41,211,152,0.35); } 50% { box-shadow: 0 0 0 9px rgba(41,211,152,0.12); } }
+.top-banner-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 22px; color: #FFFFFF; margin-bottom: 8px; }
+.top-banner-steps { font-size: 14px; color: #FFECEE; line-height: 1.7; font-weight: 700; }
 
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 3px rgba(255,71,87,0.35); }
-  50% { box-shadow: 0 0 0 9px rgba(255,71,87,0.12); }
-}
-
-.top-banner-title {
-  font-family: 'Space Grotesk', sans-serif;
-  font-weight: 700;
-  font-size: 22px;
-  color: #FFFFFF;
-  margin-bottom: 8px;
-}
-
-.top-banner-steps {
-  font-size: 14px;
-  color: #FFECEE;
-  line-height: 1.7;
-  font-weight: 700;
-}
-
-.footer-note {
-  text-align: center;
-  font-size: 12px;
-  color: #545C70;
-  margin-top: 22px;
-  padding: 0 20px;
-  line-height: 1.6;
-}
+.footer-note { text-align: center; font-size: 12px; color: var(--text-faint); margin-top: 22px; padding: 0 20px; line-height: 1.6; }
 
 .reset-btn {
+  display: block; width: 100%; margin: 22px auto 0;
+  background: rgba(255,71,87,0.1); border: 1.5px solid rgba(255,71,87,0.5); color: #FF8394;
+  font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 14px;
+  padding: 13px 16px; border-radius: 12px; cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+.reset-btn:active { transform: scale(0.98); background: rgba(255,71,87,0.18); }
+
+/* ===== TAB BAR ===== */
+.tab-bar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  display: flex;
+  gap: 2px;
+  background: var(--tab-bar-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-3);
+  border-radius: 999px;
+  padding: 4px;
+  box-shadow: 0 10px 34px rgba(0,0,0,0.5);
+  z-index: 100;
+}
+
+.tab-btn {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 13.5px;
+  padding: 10px 22px;
+  border-radius: 999px;
+  color: var(--tab-inactive);
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  letter-spacing: 0.01em;
+}
+
+.tab-btn.active {
+  background: rgba(45,225,252,0.16);
+  color: #2DE1FC;
+  box-shadow: 0 0 0 1px rgba(45,225,252,0.5), 0 0 16px rgba(45,225,252,0.35);
+}
+
+[data-theme="light"] .tab-btn.active {
+  background: rgba(14,158,142,0.14);
+  color: #0B7A6E;
+  box-shadow: 0 0 0 1px rgba(14,158,142,0.45), 0 0 14px rgba(14,158,142,0.2);
+}
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ===== REPORT TAB ===== */
+.report-card {
+  background: linear-gradient(145deg, var(--card-grad-a), var(--card-grad-b));
+  border: 1px solid var(--border-3);
+  border-radius: 16px;
+  padding: 16px 18px 18px;
+  margin-bottom: 14px;
+}
+
+.field-group { margin-bottom: 16px; }
+.field-group:last-child { margin-bottom: 0; }
+
+.field-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
   display: block;
+}
+
+.pill-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.pill-row.two { grid-template-columns: repeat(2, 1fr); }
+
+.pill {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  padding: 10px 4px;
+  border-radius: 10px;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid var(--border-2);
+  background: var(--surface-1);
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+}
+
+.pill.level-low.selected { background: linear-gradient(135deg, #29D398, #1DA97A); border-color: transparent; color: #032B1E; }
+.pill.level-medium.selected { background: linear-gradient(135deg, #FFD23F, #FFB020); border-color: transparent; color: #3A2900; }
+.pill.level-high.selected { background: linear-gradient(135deg, #FF8A3D, #FF6B35); border-color: transparent; color: #3A1400; }
+.pill.level-veryhigh.selected { background: linear-gradient(135deg, #FF4757, #D6293D); border-color: transparent; color: #FFFFFF; }
+.pill.level-good.selected { background: linear-gradient(135deg, #29D398, #1DA97A); border-color: transparent; color: #032B1E; }
+.pill.level-bad.selected { background: linear-gradient(135deg, #FF4757, #D6293D); border-color: transparent; color: #FFFFFF; }
+
+.news-input {
   width: 100%;
-  margin: 22px auto 0;
-  background: rgba(255,71,87,0.1);
-  border: 1.5px solid rgba(255,71,87,0.5);
-  color: #FF8394;
+  min-height: 64px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-2);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--text-oncolor);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  resize: vertical;
+}
+.news-input::placeholder { color: var(--text-dim); }
+
+.report-trade-card {
+  background: linear-gradient(145deg, var(--card-nested-a), var(--card-nested-b));
+  border: 1px solid var(--border-2);
+  border-radius: 14px;
+  padding: 14px 16px 16px;
+  margin-bottom: 12px;
+}
+.report-trade-card:last-child { margin-bottom: 0; }
+
+.report-trade-title {
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 600;
   font-size: 14px;
-  padding: 13px 16px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.15s ease;
+  color: var(--text-body);
+  margin-bottom: 12px;
 }
 
-.reset-btn:active { transform: scale(0.98); background: rgba(255,71,87,0.18); }
+.report-condition { margin-bottom: 12px; }
+.report-condition:last-child { margin-bottom: 0; }
+
+.report-condition-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.option-grid { display: grid; gap: 6px; }
+
+.option-btn {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px; font-weight: 500;
+  padding: 9px 6px;
+  border-radius: 9px;
+  text-align: center;
+  background: var(--surface-1);
+  border: 1px solid var(--border-1);
+  color: var(--text-body);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.option-btn.selected { background: rgba(45,225,252,0.16); border-color: rgba(45,225,252,0.55); color: var(--text-oncolor); font-weight: 700; }
 </style>
 </head>
 <body>
@@ -373,31 +430,84 @@ h1 {
 
   <div class="eyebrow">
     <span>/MNQ &middot; live session</span>
-    <span class="clock" id="clock">--:--</span>
+    <span style="display:flex; align-items:center; gap:10px;">
+      <span class="clock" id="clock">--:--</span>
+      <span class="theme-toggle" id="themeToggle" aria-label="Toggle theme"></span>
+    </span>
   </div>
   <h1>Trading Checklist App</h1>
   <div class="stop-status" id="stopStatus">Stops today: <span class="n">0 / 2</span></div>
 
   <div class="top-banner" id="topBanner"></div>
 
-  <div class="rules-row">
-    <div class="rule-chip"><div class="val">2</div><div class="lab">contracts</div></div>
-    <div class="rule-chip"><div class="val">40pt</div><div class="lab">stop</div></div>
-    <div class="rule-chip"><div class="val">60pt</div><div class="lab">target</div></div>
+  <!-- ===== CHECKLIST TAB ===== -->
+  <div class="tab-panel active" id="panel-checklist">
+    <div class="rules-row">
+      <div class="rule-chip"><div class="val">2</div><div class="lab">contracts</div></div>
+      <div class="rule-chip"><div class="val">40pt</div><div class="lab">stop</div></div>
+      <div class="rule-chip"><div class="val">60pt</div><div class="lab">target</div></div>
+    </div>
+
+    <div class="section-label">Pre-Market Checklist</div>
+    <div class="premarket-card" id="premarketCard"></div>
+
+    <div class="section-label">Entry checklist</div>
+    <div class="premarket-gate-note" id="gateNote" style="display:none;">Complete the pre-market checklist above to unlock trading.</div>
+    <div class="trades-lockwrap" id="tradesLockwrap">
+      <div id="trades"></div>
+    </div>
+
+    <div class="footer-note">
+      Steps unlock in order &mdash; zone, then SMA20, then SMA200, then signal. Each trade must be closed (stopped out or profit) before the next one unlocks. Two stop-outs, anywhere, ends the day. Two profits in a row also ends the day &mdash; on purpose.
+    </div>
+
+    <button class="reset-btn" id="resetBtn">Reset for new session</button>
   </div>
 
-  <div id="trades"></div>
+  <!-- ===== REPORT TAB ===== -->
+  <div class="tab-panel" id="panel-report">
+    <div class="section-label">Day Report</div>
+    <div class="report-card">
+      <div class="field-group">
+        <span class="field-label">Volume</span>
+        <div class="pill-row" id="volumeRow"></div>
+      </div>
+      <div class="field-group">
+        <span class="field-label">Volatility</span>
+        <div class="pill-row" id="volatilityRow"></div>
+      </div>
+      <div class="field-group">
+        <span class="field-label">Continuity</span>
+        <div class="pill-row two" id="continuityRow"></div>
+      </div>
+      <div class="field-group">
+        <span class="field-label">News</span>
+        <textarea class="news-input" id="newsInput" placeholder="Any scheduled news today?"></textarea>
+      </div>
+    </div>
 
-  <div class="footer-note">
-    Steps unlock in order &mdash; zone, then SMA20, then SMA200, then signal. Each trade must be closed (stopped out or profit) before the next one unlocks. Two stop-outs, anywhere, ends the day. Two profits in a row also ends the day &mdash; on purpose.
+    <div class="section-label">Trade Details</div>
+    <div id="reportTrades"></div>
   </div>
 
-  <button class="reset-btn" id="resetBtn">Reset for new session</button>
+</div>
 
+<div class="tab-bar">
+  <div class="tab-btn active" id="tabBtnChecklist">Checklist</div>
+  <div class="tab-btn" id="tabBtnReport">Report</div>
 </div>
 
 <script>
 const CHECK_SVG = '<svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.5L13 4.5" stroke="#08202B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+const PREMARKET_ITEMS = [
+  { key: 'calm', label: 'I am calm, no rush. Box breathing if needed.' },
+  { key: 'mantra', label: 'I read this 3 times: "I am here to execute my plan. Not to decide anything."' },
+  { key: 'strategy', label: 'I read my strategy with full attention' },
+  { key: 'news', label: 'I checked the scheduled news' },
+  { key: 'zonesMarked', label: "I marked today's key zones" },
+  { key: 'platformLimit', label: 'Platform max loss limit is active' },
+];
 
 const CONDITIONS = [
   { key: 'zone', label: 'Zone &mdash; drawn at 9:25 am' },
@@ -405,6 +515,18 @@ const CONDITIONS = [
   { key: 'sma200', label: 'SMA200 confirms zone' },
   { key: 'signal', label: 'Signal &mdash; hammer or engulfing' },
 ];
+
+const REPORT_CONDITIONS = [
+  { key: 'zone', label: 'Zone', options: ['15m Floor', '15m Roof', '15m BuyZone', '15m SellZone', '1H Floor', '1H Roof', '1H BuyZone', '1H SellZone'], cols: 2 },
+  { key: 'sma20', label: 'SMA20', options: ['Near', 'Away'], cols: 2 },
+  { key: 'sma200', label: 'SMA200', options: ['Near', 'Away'], cols: 2 },
+  { key: 'signal', label: 'Signal', options: ['Tail bar', '180'], cols: 2 },
+];
+
+const LEVEL_OPTIONS = ['Very High', 'High', 'Medium', 'Low'];
+const LEVEL_CLASS = { 'Very High': 'level-veryhigh', 'High': 'level-high', 'Medium': 'level-medium', 'Low': 'level-low' };
+const CONTINUITY_OPTIONS = ['Good', 'Bad'];
+const CONTINUITY_CLASS = { 'Good': 'level-good', 'Bad': 'level-bad' };
 
 function todayKey() {
   const d = new Date();
@@ -417,8 +539,23 @@ function todayKey() {
 function freshTrade() {
   return { zone: false, sma20: false, sma200: false, signal: false, outcome: null };
 }
+function freshReportTrade() {
+  return { zone: null, sma20: null, sma200: null, signal: null };
+}
+function freshPremarket() {
+  const o = {};
+  PREMARKET_ITEMS.forEach(item => { o[item.key] = false; });
+  return o;
+}
 
-let state = { trades: [freshTrade(), freshTrade(), freshTrade()] };
+let state = {
+  premarket: freshPremarket(),
+  trades: [freshTrade(), freshTrade(), freshTrade()],
+  report: {
+    volume: null, volatility: null, continuity: null, news: '',
+    trades: [freshReportTrade(), freshReportTrade(), freshReportTrade()]
+  }
+};
 
 const STORAGE_KEY = todayKey();
 
@@ -426,7 +563,13 @@ async function loadState() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      state = JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      if (parsed.premarket && parsed.trades) {
+        state = parsed;
+        if (!state.report) {
+          state.report = { volume: null, volatility: null, continuity: null, news: '', trades: [freshReportTrade(), freshReportTrade(), freshReportTrade()] };
+        }
+      }
     }
   } catch (e) {
     console.log('No saved state yet, starting fresh.');
@@ -448,11 +591,43 @@ function totalStops() {
 
 function profitStreakIndex() {
   for (let i = 0; i < state.trades.length - 1; i++) {
-    if (state.trades[i].outcome === 'clean' && state.trades[i + 1].outcome === 'clean') {
-      return i + 1;
-    }
+    if (state.trades[i].outcome === 'clean' && state.trades[i + 1].outcome === 'clean') return i + 1;
   }
   return -1;
+}
+
+function premarketComplete() {
+  return PREMARKET_ITEMS.every(item => state.premarket[item.key]);
+}
+
+function renderPremarket() {
+  const card = document.getElementById('premarketCard');
+  card.innerHTML = '';
+  const complete = premarketComplete();
+  card.className = 'premarket-card' + (complete ? ' complete' : '');
+
+  PREMARKET_ITEMS.forEach((item, idx) => {
+    const priorConfirmed = PREMARKET_ITEMS.slice(0, idx).every(prev => state.premarket[prev.key]);
+    const reachable = idx === 0 || priorConfirmed;
+    const isOn = state.premarket[item.key];
+    const isPending = !reachable && !isOn;
+
+    const row = document.createElement('div');
+    row.className = 'pm-item' + (isOn ? ' on' : '') + (isPending ? ' pending' : '');
+    row.innerHTML = '<span class="pm-box">' + CHECK_SVG + '</span><span class="pm-label">' + item.label + '</span>';
+
+    row.addEventListener('click', () => {
+      if (isPending) return;
+      if (isOn) {
+        PREMARKET_ITEMS.slice(idx).forEach(later => { state.premarket[later.key] = false; });
+      } else {
+        state.premarket[item.key] = true;
+      }
+      saveState();
+      render();
+    });
+    card.appendChild(row);
+  });
 }
 
 function renderTrades() {
@@ -464,6 +639,10 @@ function renderTrades() {
   const profitLocked = profitLockAt !== -1;
   const dayLocked = stopLocked || profitLocked;
   const lockReason = stopLocked ? 'stop' : (profitLocked ? 'profit' : null);
+
+  const gateOpen = premarketComplete();
+  document.getElementById('gateNote').style.display = gateOpen ? 'none' : 'block';
+  document.getElementById('tradesLockwrap').className = 'trades-lockwrap' + (gateOpen ? '' : ' locked');
 
   state.trades.forEach((trade, i) => {
     const confirmedCount = CONDITIONS.filter(c => trade[c.key]).length;
@@ -501,7 +680,7 @@ function renderTrades() {
         banner.innerHTML = '<div class="closed-title">&#9888; Day is over &mdash; no exceptions</div><div class="closed-steps">Close platform &rarr; walk away &rarr; breathe &rarr; read counter-script &rarr; no return for 2 hours.</div>';
       } else {
         banner.className = 'closed-banner show reason-profit';
-        banner.innerHTML = '<div class="closed-title">&#127881; Two wins in a row &mdash; day is done</div><div class="closed-steps">Locking in two wins protects today\'s gains from overconfidence. Close the platform, log it as a great session, and come back fresh next time.</div>';
+        banner.innerHTML = '<div class="closed-title">&#127881; Two wins in a row &mdash; day is done</div><div class="closed-steps">Locking in two wins protects today&rsquo;s gains from overconfidence. Close the platform, log it as a great session, and come back fresh next time.</div>';
       }
       card.appendChild(banner);
       container.appendChild(card);
@@ -588,23 +767,167 @@ function renderStopStatus() {
     topBanner.innerHTML = '<div class="top-banner-title">Day is over &mdash; no exceptions</div><div class="top-banner-steps">Close platform &rarr; walk away &rarr; breathe &rarr; read counter-script &rarr; no return for 2 hours.</div>';
   } else if (profitLocked) {
     topBanner.className = 'top-banner show reason-profit';
-    topBanner.innerHTML = '<div class="top-banner-title">&#127881; Two wins in a row &mdash; day is done</div><div class="top-banner-steps">Locking in two wins protects today\'s gains from overconfidence. Close the platform and enjoy the win.</div>';
+    topBanner.innerHTML = '<div class="top-banner-title">&#127881; Two wins in a row &mdash; day is done</div><div class="top-banner-steps">Locking in two wins protects today&rsquo;s gains from overconfidence. Close the platform and enjoy the win.</div>';
   } else {
     topBanner.className = 'top-banner';
     topBanner.innerHTML = '';
   }
 }
 
-function render() {
-  renderStopStatus();
-  renderTrades();
+function renderPillRow(containerId, options, classMap, currentValue, onSelect) {
+  const row = document.getElementById(containerId);
+  row.innerHTML = '';
+  options.forEach(opt => {
+    const pill = document.createElement('div');
+    const cls = classMap[opt];
+    pill.className = 'pill ' + cls + (currentValue === opt ? ' selected' : '');
+    pill.textContent = opt;
+    pill.addEventListener('click', () => {
+      onSelect(currentValue === opt ? null : opt);
+    });
+    row.appendChild(pill);
+  });
 }
 
+function renderReport() {
+  renderPillRow('volumeRow', LEVEL_OPTIONS, LEVEL_CLASS, state.report.volume, (val) => {
+    state.report.volume = val;
+    saveState();
+    renderReport();
+  });
+  renderPillRow('volatilityRow', LEVEL_OPTIONS, LEVEL_CLASS, state.report.volatility, (val) => {
+    state.report.volatility = val;
+    saveState();
+    renderReport();
+  });
+  renderPillRow('continuityRow', CONTINUITY_OPTIONS, CONTINUITY_CLASS, state.report.continuity, (val) => {
+    state.report.continuity = val;
+    saveState();
+    renderReport();
+  });
+
+  const newsInput = document.getElementById('newsInput');
+  if (document.activeElement !== newsInput) {
+    newsInput.value = state.report.news || '';
+  }
+
+  const container = document.getElementById('reportTrades');
+  container.innerHTML = '';
+  state.report.trades.forEach((rt, i) => {
+    const card = document.createElement('div');
+    card.className = 'report-trade-card';
+
+    const title = document.createElement('div');
+    title.className = 'report-trade-title';
+    title.textContent = 'Trade ' + (i + 1);
+    card.appendChild(title);
+
+    REPORT_CONDITIONS.forEach(c => {
+      const block = document.createElement('div');
+      block.className = 'report-condition';
+
+      const label = document.createElement('span');
+      label.className = 'report-condition-label';
+      label.textContent = c.label;
+      block.appendChild(label);
+
+      const grid = document.createElement('div');
+      grid.className = 'option-grid';
+      grid.style.gridTemplateColumns = 'repeat(' + c.cols + ', 1fr)';
+
+      c.options.forEach(opt => {
+        const btn = document.createElement('div');
+        btn.className = 'option-btn' + (rt[c.key] === opt ? ' selected' : '');
+        btn.textContent = opt;
+        btn.addEventListener('click', () => {
+          rt[c.key] = rt[c.key] === opt ? null : opt;
+          saveState();
+          renderReport();
+        });
+        grid.appendChild(btn);
+      });
+
+      block.appendChild(grid);
+      card.appendChild(block);
+    });
+
+    container.appendChild(card);
+  });
+}
+
+function render() {
+  renderPremarket();
+  renderStopStatus();
+  renderTrades();
+  renderReport();
+}
+
+document.getElementById('newsInput').addEventListener('input', (e) => {
+  state.report.news = e.target.value;
+  saveState();
+});
+
 document.getElementById('resetBtn').addEventListener('click', () => {
-  state = { trades: [freshTrade(), freshTrade(), freshTrade()] };
+  state = {
+    premarket: freshPremarket(),
+    trades: [freshTrade(), freshTrade(), freshTrade()],
+    report: { volume: null, volatility: null, continuity: null, news: '', trades: [freshReportTrade(), freshReportTrade(), freshReportTrade()] }
+  };
   saveState();
   render();
 });
+
+const tabBtnChecklist = document.getElementById('tabBtnChecklist');
+const tabBtnReport = document.getElementById('tabBtnReport');
+const panelChecklist = document.getElementById('panel-checklist');
+const panelReport = document.getElementById('panel-report');
+
+tabBtnChecklist.addEventListener('click', () => {
+  tabBtnChecklist.classList.add('active');
+  tabBtnReport.classList.remove('active');
+  panelChecklist.classList.add('active');
+  panelReport.classList.remove('active');
+});
+
+tabBtnReport.addEventListener('click', () => {
+  tabBtnReport.classList.add('active');
+  tabBtnChecklist.classList.remove('active');
+  panelReport.classList.add('active');
+  panelChecklist.classList.remove('active');
+});
+
+const SUN_SVG = '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="2"/><path d="M12 2v2.5M12 19.5V22M4.22 4.22l1.77 1.77M18 18l1.77 1.77M2 12h2.5M19.5 12H22M4.22 19.78l1.77-1.77M18 6l1.77-1.77" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+const MOON_SVG = '<svg viewBox="0 0 24 24" fill="none"><path d="M20 13.5A8.5 8.5 0 1 1 10.5 4a6.5 6.5 0 0 0 9.5 9.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+
+const THEME_KEY = 'mnq-cockpit-theme';
+
+function applyTheme(theme) {
+  const toggle = document.getElementById('themeToggle');
+  if (theme === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    toggle.innerHTML = SUN_SVG;
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    toggle.innerHTML = MOON_SVG;
+  }
+}
+
+function loadTheme() {
+  let saved = 'dark';
+  try {
+    saved = localStorage.getItem(THEME_KEY) || 'dark';
+  } catch (e) {}
+  applyTheme(saved);
+}
+
+document.getElementById('themeToggle').addEventListener('click', () => {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const next = isLight ? 'dark' : 'light';
+  applyTheme(next);
+  try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+});
+
+loadTheme();
 
 function updateClock() {
   const now = new Date();
