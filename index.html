@@ -151,6 +151,73 @@ h1 {
 }
 .premarket-card.complete { border-left-color: #29D398; }
 
+.trends-card {
+  position: sticky;
+  top: 8px;
+  z-index: 40;
+  background: linear-gradient(145deg, var(--card-grad-a), var(--card-grad-b));
+  border: 1px solid var(--border-3);
+  border-left: 4px solid var(--card-border-default);
+  border-radius: 16px;
+  padding: 14px 16px 15px;
+  margin-bottom: 14px;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.28), var(--card-shadow);
+  transition: border-left-color 0.3s ease;
+}
+.trends-card.complete { border-left-color: #29D398; }
+.trends-card.locked { opacity: 0.32; pointer-events: none; }
+
+.trend-item { margin-bottom: 10px; }
+.trend-item:last-child { margin-bottom: 0; }
+.trend-item.pending { opacity: 0.4; pointer-events: none; }
+
+.trend-head {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12.5px; font-weight: 600;
+  color: var(--text-body);
+  margin-bottom: 7px;
+}
+.trend-head .step-num {
+  font-family: 'JetBrains Mono', monospace;
+  width: 16px; height: 16px; border-radius: 5px;
+  background: var(--surface-3);
+  color: var(--text-muted);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px;
+  flex-shrink: 0;
+}
+.trend-item.confirmed .trend-head .step-num { background: #2DE1FC; color: #08202B; }
+
+.trend-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+
+.trend-btn {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px; font-weight: 600;
+  padding: 9px 4px;
+  border-radius: 9px;
+  text-align: center;
+  background: var(--surface-1);
+  border: 1px solid var(--border-1);
+  color: var(--text-body);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.trend-btn.up.selected { background: linear-gradient(135deg, rgba(41,211,152,0.25), rgba(29,169,122,0.16)); border-color: rgba(41,211,152,0.55); color: #5DE8BC; }
+.trend-btn.down.selected { background: linear-gradient(135deg, rgba(255,71,87,0.25), rgba(230,41,75,0.16)); border-color: rgba(255,71,87,0.55); color: #FF8394; }
+.trend-btn.neutral.selected { background: linear-gradient(135deg, rgba(255,210,63,0.25), rgba(255,176,32,0.16)); border-color: rgba(255,210,63,0.55); color: #FFD23F; }
+
+.trend-summary {
+  display: flex; justify-content: space-between; align-items: center;
+  cursor: pointer; user-select: none;
+}
+.trend-summary .ts-label { font-family: 'Space Grotesk', sans-serif; font-size: 12.5px; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
+.trend-summary .ts-value { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; }
+.trend-summary .ts-value.up { color: #5DE8BC; }
+.trend-summary .ts-value.down { color: #FF8394; }
+.trend-summary .ts-value.neutral { color: #FFD23F; }
+
 .pm-item {
   display: flex; align-items: center; gap: 12px;
   background: var(--surface-1);
@@ -192,6 +259,7 @@ h1 {
 }
 .trade-card.in-progress { border-left-color: #FFB020; }
 .trade-card.go { border-left-color: #29D398; box-shadow: 0 0 0 1px rgba(41,211,152,0.25); }
+.trade-card.not-aligned { border-left-color: #FF8A3D; }
 .trade-card.stopped { border-left-color: #FF4757; }
 .trade-card.closed-clean { border-left-color: #29D398; }
 .trade-card.awaiting { opacity: 0.32; pointer-events: none; }
@@ -207,9 +275,21 @@ h1 {
   transition: all 0.25s ease;
 }
 .badge.go { background: linear-gradient(135deg, #29D398, #14B37E); color: #032B1E; font-size: 17px; padding: 9px 22px; box-shadow: 0 0 0 3px rgba(41,211,152,0.3); }
+.badge.not-aligned { background: linear-gradient(135deg, #FF8A3D, #FF6B35); color: #3A1400; }
 .badge.stopped { background: linear-gradient(135deg, #FF4757, #E6294B); color: #3A0510; }
 .badge.closed-clean { background: linear-gradient(135deg, #29D398, #1DA97A); color: #032B1E; }
 .badge.locked { background: var(--surface-1); color: var(--text-muted); }
+
+.align-note {
+  background: rgba(255,138,61,0.12);
+  border: 1px solid rgba(255,138,61,0.35);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  color: #FFA669;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
 
 .chips { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
 .chip {
@@ -382,36 +462,68 @@ h1 {
 }
 .news-input::placeholder { color: var(--text-dim); }
 
-.report-trade-card {
+.condition-block {
   background: linear-gradient(145deg, var(--card-nested-a), var(--card-nested-b));
   border: 1px solid var(--border-2);
   border-radius: 14px;
   padding: 14px 16px 16px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   box-shadow: var(--card-shadow);
+  transition: opacity 0.2s ease;
 }
-.report-trade-card:last-child { margin-bottom: 0; }
+.condition-block:last-of-type { margin-bottom: 14px; }
+.condition-block.pending { opacity: 0.4; pointer-events: none; }
 
-.report-trade-title {
+.condition-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
   font-family: 'Space Grotesk', sans-serif;
+  font-size: 13.5px;
   font-weight: 600;
-  font-size: 14px;
   color: var(--text-body);
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
-.report-condition { margin-bottom: 12px; }
-.report-condition:last-child { margin-bottom: 0; }
-
-.report-condition-label {
-  font-size: 11px;
-  font-weight: 600;
+.condition-head .step-num {
+  font-family: 'JetBrains Mono', monospace;
+  width: 18px; height: 18px; border-radius: 5px;
+  background: var(--surface-3);
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 6px;
-  display: block;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  flex-shrink: 0;
 }
+
+.condition-block.confirmed .condition-head .step-num { background: #2DE1FC; color: #08202B; }
+.condition-block.confirmed .condition-head { color: var(--text-oncolor-strong, var(--text-primary)); }
+
+.condition-body { display: flex; gap: 10px; }
+
+.direction-col {
+  flex: 0 0 78px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.options-col { flex: 1; min-width: 0; }
+
+.direction-btn {
+  font-family: 'Inter', sans-serif;
+  font-size: 12.5px; font-weight: 600;
+  padding: 11px 6px;
+  border-radius: 9px;
+  text-align: center;
+  background: var(--surface-1);
+  border: 1px solid var(--border-1);
+  color: var(--text-body);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.direction-btn.up.selected { background: linear-gradient(135deg, rgba(41,211,152,0.25), rgba(29,169,122,0.16)); border-color: rgba(41,211,152,0.55); color: #5DE8BC; }
+.direction-btn.down.selected { background: linear-gradient(135deg, rgba(255,71,87,0.25), rgba(230,41,75,0.16)); border-color: rgba(255,71,87,0.55); color: #FF8394; }
 
 .option-grid { display: grid; gap: 6px; }
 
@@ -429,6 +541,55 @@ h1 {
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 .option-btn.selected { background: rgba(45,225,252,0.16); border-color: rgba(45,225,252,0.55); color: var(--text-oncolor); font-weight: 700; }
+
+.condition-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.cs-left { display: flex; align-items: center; gap: 8px; font-family: 'Space Grotesk', sans-serif; font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
+.cs-left .step-num { background: #2DE1FC; color: #08202B; }
+
+.cs-right { display: flex; align-items: center; gap: 6px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; }
+.cs-right .dir-up { color: #5DE8BC; }
+.cs-right .dir-down { color: #FF8394; }
+.cs-right .cs-dot { color: var(--text-muted); }
+.cs-right .cs-value { color: var(--text-body); font-weight: 500; }
+
+.price-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+
+.price-field {
+  background: var(--surface-1);
+  border: 1px solid var(--border-1);
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.price-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 3px;
+}
+
+.price-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  padding: 0;
+}
+.price-input::placeholder { color: var(--text-dim); font-weight: 400; }
 </style>
 </head>
 <body>
@@ -457,14 +618,18 @@ h1 {
     <div class="section-label">Pre-Market Checklist</div>
     <div class="premarket-card" id="premarketCard"></div>
 
+    <div class="section-label">Trends</div>
+    <div class="premarket-gate-note" id="trendsGateNote" style="display:none;">Complete the pre-market checklist above to unlock trends.</div>
+    <div class="trends-card" id="trendsCard"></div>
+
     <div class="section-label">Entry checklist</div>
-    <div class="premarket-gate-note" id="gateNote" style="display:none;">Complete the pre-market checklist above to unlock trading.</div>
+    <div class="premarket-gate-note" id="gateNote" style="display:none;">Complete the pre-market checklist and trends above to unlock trading.</div>
     <div class="trades-lockwrap" id="tradesLockwrap">
       <div id="trades"></div>
     </div>
 
     <div class="footer-note">
-      Steps unlock in order &mdash; zone, then SMA20, then SMA200, then signal. Each trade must be closed (stopped out or profit) before the next one unlocks. Two stop-outs, anywhere, ends the day. Two profits in a row also ends the day &mdash; on purpose.
+      Steps unlock in order &mdash; zone, then SMA20, then SMA200, then signal. A trade unlocks when either all 4 entry items agree on direction, or 3 of 4 agree and at least 1 of 2 trends confirms. Each trade must be closed (stopped out or profit) before the next one unlocks. Two stop-outs, anywhere, ends the day. Two profits in a row also ends the day &mdash; on purpose.
     </div>
 
     <button class="reset-btn" id="resetBtn">Reset for new session</button>
@@ -491,9 +656,6 @@ h1 {
         <textarea class="news-input" id="newsInput" placeholder="Any scheduled news today?"></textarea>
       </div>
     </div>
-
-    <div class="section-label">Trade Details</div>
-    <div id="reportTrades"></div>
   </div>
 
 </div>
@@ -516,17 +678,17 @@ const PREMARKET_ITEMS = [
 ];
 
 const CONDITIONS = [
-  { key: 'zone', label: 'Zone &mdash; drawn at 9:25 am' },
-  { key: 'sma20', label: 'SMA20 confirms zone' },
-  { key: 'sma200', label: 'SMA200 confirms zone' },
-  { key: 'signal', label: 'Signal &mdash; hammer or engulfing' },
-];
-
-const REPORT_CONDITIONS = [
   { key: 'zone', label: 'Zone', options: ['15m Floor', '15m Roof', '15m BuyZone', '15m SellZone', '1H Floor', '1H Roof', '1H BuyZone', '1H SellZone'], cols: 2 },
   { key: 'sma20', label: 'SMA20', options: ['Near', 'Away'], cols: 2 },
   { key: 'sma200', label: 'SMA200', options: ['Near', 'Away'], cols: 2 },
   { key: 'signal', label: 'Signal', options: ['Tail bar', '180'], cols: 2 },
+];
+
+const DIRECTION_OPTIONS = ['Up', 'Down'];
+
+const TREND_CONDITIONS = [
+  { key: 'h1', label: '1H Trend', options: ['Up', 'Down', 'Neutral'] },
+  { key: 'm15', label: '15m Trend', options: ['Up', 'Down', 'Neutral'] },
 ];
 
 const LEVEL_OPTIONS = ['Very High', 'High', 'Medium', 'Low'];
@@ -542,24 +704,40 @@ function todayKey() {
   return 'mnq-cockpit:' + y + '-' + m + '-' + day;
 }
 
-function freshTrade() {
-  return { zone: false, sma20: false, sma200: false, signal: false, outcome: null };
+function freshConditionState() {
+  return { value: null, direction: null };
 }
-function freshReportTrade() {
-  return { zone: null, sma20: null, sma200: null, signal: null };
+
+function freshTrade() {
+  return {
+    zone: freshConditionState(),
+    sma20: freshConditionState(),
+    sma200: freshConditionState(),
+    signal: freshConditionState(),
+    stopPoints: '40',
+    targetPoints: '60',
+    outcome: null
+  };
 }
 function freshPremarket() {
   const o = {};
   PREMARKET_ITEMS.forEach(item => { o[item.key] = false; });
   return o;
 }
+function freshTrends() {
+  return { h1: null, m15: null };
+}
+
+// Transient UI state: which confirmed condition blocks are manually re-opened for editing.
+// Not persisted — resets on reload, which is fine since confirmed items just show collapsed again.
+let uiExpanded = {};
 
 let state = {
   premarket: freshPremarket(),
+  trends: freshTrends(),
   trades: [freshTrade(), freshTrade(), freshTrade()],
   report: {
-    volume: null, volatility: null, continuity: null, news: '',
-    trades: [freshReportTrade(), freshReportTrade(), freshReportTrade()]
+    volume: null, volatility: null, continuity: null, news: ''
   }
 };
 
@@ -570,10 +748,17 @@ async function loadState() {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (parsed.premarket && parsed.trades) {
+      const tradesLookValid = parsed.trades && parsed.trades.every(t => t && t.zone && typeof t.zone === 'object' && 'value' in t.zone);
+      if (parsed.premarket && parsed.trades && tradesLookValid) {
         state = parsed;
         if (!state.report) {
-          state.report = { volume: null, volatility: null, continuity: null, news: '', trades: [freshReportTrade(), freshReportTrade(), freshReportTrade()] };
+          state.report = { volume: null, volatility: null, continuity: null, news: '' };
+        }
+        if (state.report.trades) {
+          delete state.report.trades;
+        }
+        if (!state.trends) {
+          state.trends = freshTrends();
         }
       }
     }
@@ -636,6 +821,79 @@ function renderPremarket() {
   });
 }
 
+function trendsComplete() {
+  return TREND_CONDITIONS.every(t => state.trends[t.key] !== null);
+}
+
+function renderTrendCard() {
+  const card = document.getElementById('trendsCard');
+  card.innerHTML = '';
+  const complete = trendsComplete();
+  const premarketDone = premarketComplete();
+  card.className = 'trends-card' + (complete ? ' complete' : '') + (!premarketDone ? ' locked' : '');
+
+  const gateNote = document.getElementById('trendsGateNote');
+  gateNote.style.display = premarketDone ? 'none' : 'block';
+
+  TREND_CONDITIONS.forEach((t, idx) => {
+    const priorConfirmed = TREND_CONDITIONS.slice(0, idx).every(prev => state.trends[prev.key] !== null);
+    const reachable = premarketDone && (idx === 0 || priorConfirmed);
+    const val = state.trends[t.key];
+    const isConfirmed = val !== null;
+    const uiKey = 'trend:' + t.key;
+    const showEditing = !isConfirmed || uiExpanded[uiKey] === true;
+
+    const item = document.createElement('div');
+    item.className = 'trend-item' + (isConfirmed ? ' confirmed' : '') + (!reachable ? ' pending' : '');
+
+    if (isConfirmed && !showEditing) {
+      const summary = document.createElement('div');
+      summary.className = 'trend-summary';
+      const valClass = val.toLowerCase();
+      summary.innerHTML =
+        '<span class="ts-label"><span class="step-num">' + (idx + 1) + '</span>' + t.label + '</span>' +
+        '<span class="ts-value ' + valClass + '">' + val + '</span>';
+      summary.addEventListener('click', () => {
+        if (!premarketDone) return;
+        uiExpanded[uiKey] = true;
+        renderTrendCard();
+      });
+      item.appendChild(summary);
+      card.appendChild(item);
+      return;
+    }
+
+    const head = document.createElement('div');
+    head.className = 'trend-head';
+    head.innerHTML = '<span class="step-num">' + (idx + 1) + '</span><span>' + t.label + '</span>';
+    item.appendChild(head);
+
+    const opts = document.createElement('div');
+    opts.className = 'trend-options';
+    t.options.forEach(opt => {
+      const btn = document.createElement('div');
+      btn.className = 'trend-btn ' + opt.toLowerCase() + (val === opt ? ' selected' : '');
+      btn.textContent = opt;
+      btn.addEventListener('click', () => {
+        if (!reachable) return;
+        state.trends[t.key] = state.trends[t.key] === opt ? null : opt;
+        TREND_CONDITIONS.slice(idx + 1).forEach(later => {
+          state.trends[later.key] = null;
+          delete uiExpanded['trend:' + later.key];
+        });
+        if (state.trends[t.key] !== null) {
+          uiExpanded[uiKey] = false;
+        }
+        saveState();
+        render();
+      });
+      opts.appendChild(btn);
+    });
+    item.appendChild(opts);
+    card.appendChild(item);
+  });
+}
+
 function renderTrades() {
   const container = document.getElementById('trades');
   container.innerHTML = '';
@@ -646,13 +904,30 @@ function renderTrades() {
   const dayLocked = stopLocked || profitLocked;
   const lockReason = stopLocked ? 'stop' : (profitLocked ? 'profit' : null);
 
-  const gateOpen = premarketComplete();
+  const gateOpen = premarketComplete() && trendsComplete();
   document.getElementById('gateNote').style.display = gateOpen ? 'none' : 'block';
   document.getElementById('tradesLockwrap').className = 'trades-lockwrap' + (gateOpen ? '' : ' locked');
 
   state.trades.forEach((trade, i) => {
-    const confirmedCount = CONDITIONS.filter(c => trade[c.key]).length;
-    const allGo = confirmedCount === CONDITIONS.length;
+    const confirmedCount = CONDITIONS.filter(c => trade[c.key].value !== null && trade[c.key].direction !== null).length;
+    const allFilled = confirmedCount === CONDITIONS.length;
+
+    let aligned = false;
+    let majorityDir = null;
+    let unanimous = false;
+    if (allFilled) {
+      const dirs = CONDITIONS.map(c => trade[c.key].direction);
+      const upCount = dirs.filter(d => d === 'Up').length;
+      const downCount = dirs.filter(d => d === 'Down').length;
+      majorityDir = upCount >= 3 ? 'Up' : (downCount >= 3 ? 'Down' : null);
+      unanimous = upCount === 4 || downCount === 4;
+      if (majorityDir) {
+        aligned = unanimous || state.trends.h1 === majorityDir || state.trends.m15 === majorityDir;
+      }
+    }
+    const allGo = allFilled && aligned;
+    const notAligned = allFilled && !aligned;
+
     const prevResolved = i === 0 || state.trades[i - 1].outcome !== null;
     const isNextUp = trade.outcome === null && prevResolved;
     const dayJustEnded = dayLocked && isNextUp;
@@ -662,6 +937,7 @@ function renderTrades() {
     if (trade.outcome === 'stopped') statusClass = ' stopped';
     else if (trade.outcome === 'clean') statusClass = ' closed-clean';
     else if (allGo) statusClass = ' go';
+    else if (notAligned) statusClass = ' not-aligned';
     else if (confirmedCount > 0) statusClass = ' in-progress';
 
     const card = document.createElement('div');
@@ -676,6 +952,7 @@ function renderTrades() {
     else if (dayJustEnded && lockReason === 'stop') { badgeClass = ' locked'; badgeText = 'SESSION CLOSED'; }
     else if (dayJustEnded && lockReason === 'profit') { badgeClass = ' go'; badgeText = 'NICE WORK'; }
     else if (allGo) { badgeClass = ' go'; badgeText = 'GO'; }
+    else if (notAligned) { badgeClass = ' not-aligned'; badgeText = 'NOT ALIGNED'; }
     head.innerHTML = '<span class="trade-name">Trade ' + (i + 1) + '</span><span class="badge' + badgeClass + '">' + badgeText + '</span>';
     card.appendChild(head);
 
@@ -693,34 +970,137 @@ function renderTrades() {
       return;
     }
 
-    const chips = document.createElement('div');
-    chips.className = 'chips';
     const checklistLocked = trade.outcome !== null || cardAwaiting;
+
     CONDITIONS.forEach((c, idx) => {
-      const priorConfirmed = CONDITIONS.slice(0, idx).every(prev => trade[prev.key]);
+      const cState = trade[c.key];
+      const priorConfirmed = CONDITIONS.slice(0, idx).every(prev => trade[prev.key].value !== null && trade[prev.key].direction !== null);
       const reachable = !checklistLocked && (idx === 0 || priorConfirmed);
-      const isPending = !reachable && !trade[c.key];
+      const isConfirmed = cState.value !== null && cState.direction !== null;
+      const uiKey = i + ':' + c.key;
+      const showEditing = !isConfirmed || uiExpanded[uiKey] === true;
 
-      const chip = document.createElement('div');
-      chip.className = 'chip' + (trade[c.key] ? ' on' : '') + (isPending ? ' pending' : '');
-      chip.innerHTML = '<span class="chip-step">' + (idx + 1) + '</span><span class="chip-box">' + CHECK_SVG + '</span><span class="chip-label">' + c.label + '</span>';
+      const block = document.createElement('div');
+      block.className = 'condition-block' + (isConfirmed ? ' confirmed' : '') + (!reachable ? ' pending' : '');
 
-      chip.addEventListener('click', () => {
-        if (checklistLocked) return;
-        if (isPending) return;
-        if (trade[c.key]) {
-          CONDITIONS.slice(idx).forEach(later => { trade[later.key] = false; });
-        } else {
-          trade[c.key] = true;
+      if (isConfirmed && !showEditing) {
+        const summary = document.createElement('div');
+        summary.className = 'condition-summary';
+        const dirClass = cState.direction === 'Up' ? 'dir-up' : 'dir-down';
+        summary.innerHTML =
+          '<span class="cs-left"><span class="step-num">' + (idx + 1) + '</span><span class="cs-name">' + c.label + '</span></span>' +
+          '<span class="cs-right"><span class="' + dirClass + '">' + cState.direction + '</span><span class="cs-dot">&middot;</span><span class="cs-value">' + cState.value + '</span></span>';
+        summary.addEventListener('click', () => {
+          if (checklistLocked) return;
+          uiExpanded[uiKey] = true;
+          renderTrades();
+        });
+        block.appendChild(summary);
+        card.appendChild(block);
+        return;
+      }
+
+      const headRow = document.createElement('div');
+      headRow.className = 'condition-head';
+      headRow.innerHTML = '<span class="step-num">' + (idx + 1) + '</span><span>' + c.label + '</span>';
+      block.appendChild(headRow);
+
+      const applyChange = (field, val) => {
+        if (!reachable) return;
+        const cur = trade[c.key];
+        cur[field] = cur[field] === val ? null : val;
+        CONDITIONS.slice(idx + 1).forEach(later => {
+          trade[later.key] = freshConditionState();
+          delete uiExpanded[i + ':' + later.key];
+        });
+        if (cur.value !== null && cur.direction !== null) {
+          uiExpanded[uiKey] = false;
         }
         saveState();
         renderTrades();
+      };
+
+      const body = document.createElement('div');
+      body.className = 'condition-body';
+
+      const dirCol = document.createElement('div');
+      dirCol.className = 'direction-col';
+      DIRECTION_OPTIONS.forEach(opt => {
+        const btn = document.createElement('div');
+        btn.className = 'direction-btn ' + opt.toLowerCase() + (cState.direction === opt ? ' selected' : '');
+        btn.textContent = opt;
+        btn.addEventListener('click', () => applyChange('direction', opt));
+        dirCol.appendChild(btn);
       });
-      chips.appendChild(chip);
+      body.appendChild(dirCol);
+
+      const optCol = document.createElement('div');
+      optCol.className = 'options-col';
+      const grid = document.createElement('div');
+      grid.className = 'option-grid';
+      grid.style.gridTemplateColumns = 'repeat(' + c.cols + ', 1fr)';
+      c.options.forEach(opt => {
+        const btn = document.createElement('div');
+        btn.className = 'option-btn' + (cState.value === opt ? ' selected' : '');
+        btn.textContent = opt;
+        btn.addEventListener('click', () => applyChange('value', opt));
+        grid.appendChild(btn);
+      });
+      optCol.appendChild(grid);
+      body.appendChild(optCol);
+
+      block.appendChild(body);
+      card.appendChild(block);
     });
-    card.appendChild(chips);
+
+    if (notAligned) {
+      const note = document.createElement('div');
+      note.className = 'align-note';
+      const dirs = CONDITIONS.map(c => trade[c.key].direction);
+      const upCount = dirs.filter(d => d === 'Up').length;
+      const downCount = dirs.filter(d => d === 'Down').length;
+      if (!majorityDir) {
+        note.textContent = 'Entry items split ' + upCount + '/' + downCount + ' \u2014 need at least 3 of 4 pointing the same way.';
+      } else {
+        note.textContent = majorityDir + ' has ' + Math.max(upCount, downCount) + ' of 4 entry items, but neither trend confirms ' + majorityDir + ' \u2014 no trade.';
+      }
+      card.appendChild(note);
+    }
 
     if (trade.outcome === null) {
+      if (allGo && !cardAwaiting) {
+        const priceRow = document.createElement('div');
+        priceRow.className = 'price-row';
+
+        const stopField = document.createElement('div');
+        stopField.className = 'price-field';
+        stopField.innerHTML = '<span class="price-label">Stop (pts)</span>';
+        const stopInput = document.createElement('input');
+        stopInput.type = 'text';
+        stopInput.inputMode = 'decimal';
+        stopInput.placeholder = 'e.g. 40';
+        stopInput.className = 'price-input';
+        stopInput.value = trade.stopPoints || '';
+        stopInput.addEventListener('input', (e) => { trade.stopPoints = e.target.value; saveState(); });
+        stopField.appendChild(stopInput);
+
+        const targetField = document.createElement('div');
+        targetField.className = 'price-field';
+        targetField.innerHTML = '<span class="price-label">Target (pts)</span>';
+        const targetInput = document.createElement('input');
+        targetInput.type = 'text';
+        targetInput.inputMode = 'decimal';
+        targetInput.placeholder = 'e.g. 60';
+        targetInput.className = 'price-input';
+        targetInput.value = trade.targetPoints || '';
+        targetInput.addEventListener('input', (e) => { trade.targetPoints = e.target.value; saveState(); });
+        targetField.appendChild(targetInput);
+
+        priceRow.appendChild(stopField);
+        priceRow.appendChild(targetField);
+        card.appendChild(priceRow);
+      }
+
       const row = document.createElement('div');
       row.className = 'resolve-row';
       const canResolve = allGo && !cardAwaiting;
@@ -751,7 +1131,11 @@ function renderTrades() {
     } else {
       const tag = document.createElement('div');
       tag.className = 'resolved-tag ' + (trade.outcome === 'stopped' ? 'stopped' : 'closed-clean');
-      tag.textContent = trade.outcome === 'stopped' ? 'Stop ' + (state.trades.slice(0, i + 1).filter(t => t.outcome === 'stopped').length) + ' of 2 logged' : 'Profit logged';
+      let tagText = trade.outcome === 'stopped' ? 'Stop ' + (state.trades.slice(0, i + 1).filter(t => t.outcome === 'stopped').length) + ' of 2 logged' : 'Profit logged';
+      if (trade.stopPoints || trade.targetPoints) {
+        tagText += '  ·  Stop ' + (trade.stopPoints ? trade.stopPoints + 'pts' : '&mdash;') + ' / Target ' + (trade.targetPoints ? trade.targetPoints + 'pts' : '&mdash;');
+      }
+      tag.innerHTML = tagText;
       card.appendChild(tag);
     }
 
@@ -816,53 +1200,11 @@ function renderReport() {
   if (document.activeElement !== newsInput) {
     newsInput.value = state.report.news || '';
   }
-
-  const container = document.getElementById('reportTrades');
-  container.innerHTML = '';
-  state.report.trades.forEach((rt, i) => {
-    const card = document.createElement('div');
-    card.className = 'report-trade-card';
-
-    const title = document.createElement('div');
-    title.className = 'report-trade-title';
-    title.textContent = 'Trade ' + (i + 1);
-    card.appendChild(title);
-
-    REPORT_CONDITIONS.forEach(c => {
-      const block = document.createElement('div');
-      block.className = 'report-condition';
-
-      const label = document.createElement('span');
-      label.className = 'report-condition-label';
-      label.textContent = c.label;
-      block.appendChild(label);
-
-      const grid = document.createElement('div');
-      grid.className = 'option-grid';
-      grid.style.gridTemplateColumns = 'repeat(' + c.cols + ', 1fr)';
-
-      c.options.forEach(opt => {
-        const btn = document.createElement('div');
-        btn.className = 'option-btn' + (rt[c.key] === opt ? ' selected' : '');
-        btn.textContent = opt;
-        btn.addEventListener('click', () => {
-          rt[c.key] = rt[c.key] === opt ? null : opt;
-          saveState();
-          renderReport();
-        });
-        grid.appendChild(btn);
-      });
-
-      block.appendChild(grid);
-      card.appendChild(block);
-    });
-
-    container.appendChild(card);
-  });
 }
 
 function render() {
   renderPremarket();
+  renderTrendCard();
   renderStopStatus();
   renderTrades();
   renderReport();
@@ -876,9 +1218,11 @@ document.getElementById('newsInput').addEventListener('input', (e) => {
 document.getElementById('resetBtn').addEventListener('click', () => {
   state = {
     premarket: freshPremarket(),
+    trends: freshTrends(),
     trades: [freshTrade(), freshTrade(), freshTrade()],
-    report: { volume: null, volatility: null, continuity: null, news: '', trades: [freshReportTrade(), freshReportTrade(), freshReportTrade()] }
+    report: { volume: null, volatility: null, continuity: null, news: '' }
   };
+  uiExpanded = {};
   saveState();
   render();
 });
