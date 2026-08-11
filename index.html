@@ -903,8 +903,8 @@ h1 {
       </div>
     </div>
 
-    <button class="export-btn" id="exportBtn">&#8593; Export today's journal</button>
-    <div class="export-note">Saves a full record of today &mdash; premarket, trends, every trade, and this report &mdash; as a file you can save to iCloud Drive, Google Drive, or anywhere else.</div>
+    <button class="export-btn" id="exportBtn">&#8593; Export today's journal (CSV)</button>
+    <div class="export-note">Matches your Trade Log and Daily Summary column format exactly. Broker-side numbers (price, time, P&amp;L, fees) are left blank for you to fill in from your broker's export &mdash; this only carries the strategy side: trends, entry conditions, direction, stop/target points, and your day report.</div>
   </div>
 
 </div>
@@ -1779,66 +1779,178 @@ document.getElementById('addExtraTradeBtn').addEventListener('click', () => {
   render();
 });
 
+// Exact column headers copied from the real journal's "Trade Log" and "Daily Summary" sheets.
+const TRADE_LOG_HEADERS = [
+  '#', 'Date', 'Week', 'Account', 'Capital', 'Symbol', 'Qty', 'Entry', 'Exit',
+  'Entry Time', 'Exit Time', 'Direction', 'Fee', 'Net P&L', '% P&L',
+  '1h Trend', '15m Trend', 'Zone Direction', 'Signal Direction', 'SMA20 Direction', 'SMA200 Direction',
+  'Zone', 'Signal', 'SMA20', 'SMA200', 'Respected?', 'Stop Pts', 'Target Pts',
+  'Stop adjustment', 'Real R:R', 'Respected?2', 'Strategy respected?',
+  'Emotional State\n(Entry)', 'Rule Broken\n(if any)', 'Comments'
+];
+
+const DAILY_SUMMARY_HEADERS = [
+  '#', 'Date', 'Week', 'Account', 'P/L', 'Pre-Market\nChecklist Done?',
+  'Volume', 'Volatility', 'Continuity', 'NEWS', 'Trades Taken', 'Compliant Trades',
+  'Trade\nCompliance %', 'Any Breach?', 'Post-2-Stop\nContinued?', 'Post-2-Win\nContinued?',
+  'Trading session', 'MLPD', 'Emotion', 'Followed Plan?'
+];
+
+// App's internal Zone/Signal value strings -> the journal's own abbreviated convention.
+const ZONE_TO_JOURNAL = {
+  '15m Floor': '15m Floor', '15m Roof': '15m Roof',
+  '15m BuyZone': '15m BZ', '15m SellZone': '15m SZ',
+  '1H Floor': '1h Floor', '1H Roof': '1h Roof',
+  '1H BuyZone': '1h BZ', '1H SellZone': '1h SZ'
+};
+const SIGNAL_TO_JOURNAL = { 'Tail bar': 'Tail', '180': '180', 'None': 'None' };
+
 function computeTradeAlignment(trade) {
   const confirmedCount = CONDITIONS.filter(c => isItemAnswered(trade, c)).length;
   const allFilled = confirmedCount === CONDITIONS.length;
-  if (!allFilled) return trade.outcome ? 'resolved-incomplete-entries' : 'incomplete';
+  if (!allFilled) return null;
   const dirs = CONDITIONS.map(c => trade[c.key].direction);
   const upCount = dirs.filter(d => d === 'Up').length;
   const downCount = dirs.filter(d => d === 'Down').length;
   const majorityDir = upCount >= 3 ? 'Up' : (downCount >= 3 ? 'Down' : null);
   const unanimous = upCount === 4 || downCount === 4;
-  if (!majorityDir) return 'not_aligned';
+  if (!majorityDir) return { aligned: false, majorityDir: null };
   const aligned = unanimous || state.trends.h1 === majorityDir || state.trends.m15 === majorityDir;
-  return aligned ? 'go' : 'not_aligned';
+  return { aligned, majorityDir };
 }
 
-function formatTradeForExport(trade) {
-  const entries = {};
-  CONDITIONS.forEach(c => {
-    entries[c.key] = { direction: trade[c.key].direction, value: trade[c.key].value };
-  });
-  return {
-    outcome: trade.outcome === 'clean' ? 'profit' : (trade.outcome === 'stopped' ? 'stopped_out' : 'not_taken'),
-    stopPoints: trade.stopPoints || null,
-    targetPoints: trade.targetPoints || null,
-    entries: entries,
-    alignment: computeTradeAlignment(trade)
-  };
+function csvEscape(val) {
+  if (val === null || val === undefined) return '';
+  const s = String(val);
+  if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
 }
 
-function buildJournalExport() {
+function csvRow(values) {
+  return values.map(csvEscape).join(',');
+}
+
+function buildTradeLogRow(trade, dateStr, ruleBrokenNote) {
+  const align = computeTradeAlignment(trade);
+  const direction = align && align.aligned ? (align.majorityDir === 'Up' ? 'Long' : 'Short') : '';
+  const strategyRespected = align ? (align.aligned ? 'Yes' : 'No') : '';
+  const zoneVal = trade.zone.value ? (ZONE_TO_JOURNAL[trade.zone.value] || trade.zone.value) : '';
+  const signalVal = trade.signal.value ? (SIGNAL_TO_JOURNAL[trade.signal.value] || trade.signal.value) : '';
+  const stopPts = trade.stopPoints || '';
+  const targetPts = trade.targetPoints || '';
+  let realRR = '';
+  if (trade.stopPoints && trade.targetPoints && parseFloat(trade.stopPoints) > 0) {
+    realRR = (parseFloat(trade.targetPoints) / parseFloat(trade.stopPoints)).toFixed(4);
+  }
+
+  // Column order must match TRADE_LOG_HEADERS exactly.
+  return [
+    '',                              // # (broker/manual numbering)
+    dateStr,                         // Date
+    '',                              // Week (broker import)
+    '',                              // Account (broker import)
+    '',                              // Capital (broker import)
+    '',                              // Symbol (broker import)
+    '',                              // Qty (broker import)
+    '',                              // Entry price (broker import)
+    '',                              // Exit price (broker import)
+    '',                              // Entry Time (broker import)
+    '',                              // Exit Time (broker import)
+    direction,                       // Direction
+    '',                              // Fee (broker import)
+    '',                              // Net P&L (broker import)
+    '',                              // % P&L (broker import)
+    state.trends.h1 || '',           // 1h Trend
+    state.trends.m15 || '',          // 15m Trend
+    trade.zone.direction || '',      // Zone Direction
+    trade.signal.direction || '',    // Signal Direction
+    trade.sma20.direction || '',     // SMA20 Direction
+    trade.sma200.direction || '',    // SMA200 Direction
+    zoneVal,                         // Zone
+    signalVal,                       // Signal
+    trade.sma20.value || '',         // SMA20
+    trade.sma200.value || '',        // SMA200
+    '',                              // Respected? (left for you/broker-side reconciliation)
+    stopPts,                         // Stop Pts
+    targetPts,                       // Target Pts
+    '',                              // Stop adjustment
+    realRR,                          // Real R:R
+    '',                              // Respected?2
+    strategyRespected,               // Strategy respected?
+    '',                              // Emotional State (Entry)
+    ruleBrokenNote || '',            // Rule Broken (if any)
+    ''                                // Comments
+  ];
+}
+
+function buildJournalCSV() {
   const dateStr = todayKey().replace('mnq-cockpit:', '');
-  return {
-    date: dateStr,
-    instrument: 'MNQ',
-    premarketChecklistComplete: premarketComplete(),
-    trends: { h1: state.trends.h1, m15: state.trends.m15 },
-    officialTrades: state.trades.map(formatTradeForExport),
-    offProtocolTrades: state.extraTrades.map(formatTradeForExport),
-    stopsToday: totalStops(),
-    dayReport: {
-      volume: state.report.volume,
-      volatility: state.report.volatility,
-      continuity: state.report.continuity,
-      news: state.report.news
-    },
-    exportedAt: new Date().toISOString()
-  };
+  const lines = [];
+
+  lines.push(csvRow(TRADE_LOG_HEADERS));
+  state.trades.forEach(trade => {
+    if (trade.outcome === null && !isItemAnswered(trade, CONDITIONS[0])) return; // skip untouched trades
+    lines.push(csvRow(buildTradeLogRow(trade, dateStr, '')));
+  });
+  state.extraTrades.forEach(trade => {
+    lines.push(csvRow(buildTradeLogRow(trade, dateStr, 'Off-protocol \u2014 taken after 2-Stop/2-Win Protocol or past max 3 trades')));
+  });
+
+  lines.push('');
+
+  const stops = totalStops();
+  const stopLocked = stops >= 2;
+  const profitLocked = profitStreakIndex() !== -1;
+  const hasExtras = state.extraTrades.length > 0;
+
+  const allTradesForCompliance = state.trades.filter(t => t.outcome !== null);
+  const tradesTaken = allTradesForCompliance.length + state.extraTrades.filter(t => t.outcome !== null).length;
+  const compliantTrades = allTradesForCompliance.filter(t => {
+    const a = computeTradeAlignment(t);
+    return a && a.aligned;
+  }).length;
+  const compliancePct = tradesTaken > 0 ? (compliantTrades / tradesTaken).toFixed(4) : '';
+
+  lines.push(csvRow(DAILY_SUMMARY_HEADERS));
+  lines.push(csvRow([
+    '',                                          // #
+    dateStr,                                     // Date
+    '',                                          // Week
+    '',                                          // Account
+    '',                                          // P/L (broker import)
+    premarketComplete() ? 'Yes' : 'No',          // Pre-Market Checklist Done?
+    state.report.volume || '',                   // Volume
+    state.report.volatility || '',               // Volatility
+    state.report.continuity || '',               // Continuity
+    state.report.news || '',                     // NEWS
+    tradesTaken,                                 // Trades Taken
+    compliantTrades,                             // Compliant Trades
+    compliancePct,                               // Trade Compliance %
+    hasExtras ? 'Yes' : 'No',                    // Any Breach?
+    (stopLocked && hasExtras) ? 'Yes' : 'No',    // Post-2-Stop Continued?
+    (profitLocked && hasExtras) ? 'Yes' : 'No',  // Post-2-Win Continued?
+    '',                                          // Trading session
+    '',                                          // MLPD
+    '',                                          // Emotion
+    hasExtras ? 'No' : 'Yes'                     // Followed Plan?
+  ]));
+
+  return { csv: lines.join('\n'), dateStr };
 }
 
 document.getElementById('exportBtn').addEventListener('click', async () => {
-  const data = buildJournalExport();
-  const json = JSON.stringify(data, null, 2);
-  const filename = 'MNQ-Journal-' + data.date + '.json';
-  const blob = new Blob([json], { type: 'application/json' });
-  const file = new File([blob], filename, { type: 'application/json' });
+  const { csv, dateStr } = buildJournalCSV();
+  const filename = 'MNQ-Journal-' + dateStr + '.csv';
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const file = new File([blob], filename, { type: 'text/csv' });
 
   const canUseShare = navigator.canShare && navigator.canShare({ files: [file] });
 
   if (canUseShare) {
     try {
-      await navigator.share({ files: [file], title: 'MNQ Trading Journal \u2014 ' + data.date });
+      await navigator.share({ files: [file], title: 'MNQ Trading Journal \u2014 ' + dateStr });
     } catch (e) {
       // User cancelled the share sheet, or share failed after opening — either way,
       // don't force a download on top of it. Just stop.
