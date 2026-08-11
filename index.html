@@ -1819,22 +1819,8 @@ function computeTradeAlignment(trade) {
   return { aligned, majorityDir };
 }
 
-function csvEscape(val) {
-  if (val === null || val === undefined) return '';
-  const s = String(val);
-  if (s.includes(',') || s.includes('"') || s.includes('\n')) {
-    return '"' + s.replace(/"/g, '""') + '"';
-  }
-  return s;
-}
-
-function csvRow(values) {
-  return values.map(csvEscape).join(',');
-}
-
 function buildTradeLogRow(trade, dateStr, ruleBrokenNote) {
   const align = computeTradeAlignment(trade);
-  const direction = align && align.aligned ? (align.majorityDir === 'Up' ? 'Long' : 'Short') : '';
   const strategyRespected = align ? (align.aligned ? 'Yes' : 'No') : '';
   const zoneVal = trade.zone.value ? (ZONE_TO_JOURNAL[trade.zone.value] || trade.zone.value) : '';
   const signalVal = trade.signal.value ? (SIGNAL_TO_JOURNAL[trade.signal.value] || trade.signal.value) : '';
@@ -1845,10 +1831,12 @@ function buildTradeLogRow(trade, dateStr, ruleBrokenNote) {
     realRR = (parseFloat(trade.targetPoints) / parseFloat(trade.stopPoints)).toFixed(4);
   }
 
-  // Column order must match TRADE_LOG_HEADERS exactly.
+  // Columns 1-15 (#, Date, Week, Account, Capital, Symbol, Qty, Entry, Exit, Entry Time,
+  // Exit Time, Direction, Fee, Net P&L, % P&L) are broker-side data the app doesn't have —
+  // left blank for you to fill in from your broker's export. App data starts at column 16.
   return [
     '',                              // # (broker/manual numbering)
-    dateStr,                         // Date
+    '',                              // Date (broker import)
     '',                              // Week (broker import)
     '',                              // Account (broker import)
     '',                              // Capital (broker import)
@@ -1858,7 +1846,7 @@ function buildTradeLogRow(trade, dateStr, ruleBrokenNote) {
     '',                              // Exit price (broker import)
     '',                              // Entry Time (broker import)
     '',                              // Exit Time (broker import)
-    direction,                       // Direction
+    '',                              // Direction (broker import)
     '',                              // Fee (broker import)
     '',                              // Net P&L (broker import)
     '',                              // % P&L (broker import)
@@ -1883,6 +1871,19 @@ function buildTradeLogRow(trade, dateStr, ruleBrokenNote) {
     ruleBrokenNote || '',            // Rule Broken (if any)
     ''                                // Comments
   ];
+}
+
+function csvEscape(val) {
+  if (val === null || val === undefined) return '';
+  const s = String(val);
+  if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+
+function csvRow(values) {
+  return values.map(csvEscape).join(',');
 }
 
 function buildJournalCSV() {
@@ -1916,7 +1917,7 @@ function buildJournalCSV() {
   lines.push(csvRow(DAILY_SUMMARY_HEADERS));
   lines.push(csvRow([
     '',                                          // #
-    dateStr,                                     // Date
+    '',                                          // Date (left for your existing date workflow)
     '',                                          // Week
     '',                                          // Account
     '',                                          // P/L (broker import)
