@@ -100,7 +100,6 @@ body {
   padding: 18px 4px 4px;
 }
 
-.clock { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-muted); }
 
 .theme-toggle {
   width: 26px;
@@ -118,6 +117,34 @@ body {
 }
 
 .theme-toggle svg { width: 14px; height: 14px; }
+
+.header-reset-btn {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border-1);
+  border-radius: 50%;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  transition: background 0.2s ease, color 0.2s ease, width 0.15s ease, border-radius 0.15s ease;
+}
+.header-reset-btn.armed {
+  width: auto;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #FF4757, #D6293D);
+  border-color: transparent;
+  animation: pulse-glow 1.2s ease-in-out infinite;
+}
 
 h1 {
   font-family: 'Space Grotesk', sans-serif;
@@ -156,6 +183,40 @@ h1 {
   transition: border-left-color 0.3s ease;
 }
 .premarket-card.complete { border-left-color: #29D398; }
+
+.premarket-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.pm-summary-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.pm-summary-check {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  background: #2DE1FC;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.pm-summary-check svg { display: block; width: 13px; height: 13px; }
+
+.pm-summary-right {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-green);
+}
 
 .trends-card {
   position: sticky;
@@ -199,10 +260,11 @@ h1 {
 
 .trend-btn {
   font-family: 'Inter', sans-serif;
-  font-size: 12px; font-weight: 500;
-  padding: 9px 4px;
+  font-size: 11.5px; font-weight: 500;
+  padding: 9px 3px;
   border-radius: 9px;
   text-align: center;
+  white-space: nowrap;
   background: var(--surface-1);
   border: 1px solid var(--border-1);
   color: var(--text-body);
@@ -228,7 +290,7 @@ h1 {
   flex-shrink: 0;
   background: #2DE1FC; color: #08202B;
 }
-.trend-summary .ts-value { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; flex: 0 0 52px; text-align: left; }
+.trend-summary .ts-value { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; flex: 0 0 60px; text-align: left; }
 .trend-summary .ts-value.up { color: var(--text-green); }
 .trend-summary .ts-value.down { color: var(--text-red); }
 .trend-summary .ts-value.neutral { color: var(--text-amber); }
@@ -415,6 +477,26 @@ h1 {
   z-index: 100;
 }
 
+.floating-clock {
+  position: fixed;
+  top: calc(76px + env(safe-area-inset-top, 0px));
+  right: calc(14px + env(safe-area-inset-right, 0px));
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  background: var(--tab-bar-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-3);
+  border-radius: 999px;
+  padding: 6px 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+  z-index: 100;
+  pointer-events: none;
+}
+
 .tab-btn {
   font-family: 'Inter', sans-serif;
   font-weight: 600;
@@ -545,7 +627,7 @@ h1 {
 .condition-body { display: flex; gap: 8px; align-items: stretch; }
 
 .direction-col {
-  flex: 0 0 78px;
+  flex: 0 0 92px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -578,9 +660,10 @@ h1 {
 .direction-btn {
   font-family: 'Inter', sans-serif;
   font-size: 12.5px; font-weight: 500;
-  padding: 11px 6px;
+  padding: 11px 4px;
   border-radius: 9px;
   text-align: center;
+  white-space: nowrap;
   background: var(--surface-1);
   border: 1px solid var(--border-1);
   color: var(--text-body);
@@ -616,6 +699,12 @@ h1 {
   user-select: none;
 }
 
+.condition-summary-pending {
+  cursor: default;
+}
+.condition-summary-pending .cs-left { color: var(--text-muted); }
+.condition-summary-pending .cs-left .step-num { background: var(--surface-3); color: var(--text-dim); }
+
 .cs-left { display: flex; align-items: center; gap: 9px; font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 700; color: var(--text-primary); flex: 0 0 auto; }
 .cs-left .step-num {
   font-family: 'JetBrains Mono', monospace;
@@ -627,7 +716,7 @@ h1 {
 }
 
 .cs-right { display: flex; align-items: center; justify-content: flex-start; gap: 0; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; flex: 0 0 176px; }
-.cs-right .dir-up, .cs-right .dir-down, .cs-right .dir-na { flex: 0 0 52px; text-align: left; }
+.cs-right .dir-up, .cs-right .dir-down, .cs-right .dir-na { flex: 0 0 60px; text-align: left; }
 .cs-right .dir-na { color: var(--text-dim); font-weight: 400; }
 .cs-right .dir-up { color: var(--text-green); }
 .cs-right .dir-down { color: var(--text-red); }
@@ -673,8 +762,8 @@ h1 {
   <div class="eyebrow">
     <span>/MNQ &middot; live session</span>
     <span style="display:flex; align-items:center; gap:10px;">
-      <span class="clock" id="clock">--:--</span>
       <span class="theme-toggle" id="themeToggle" aria-label="Toggle theme"></span>
+      <span class="header-reset-btn" id="headerResetBtn" title="Reset for new session" aria-label="Reset for new session">&#8635;</span>
     </span>
   </div>
   <h1>Trading Checklist App</h1>
@@ -735,6 +824,8 @@ h1 {
 
 </div>
 
+<div class="floating-clock" id="floatingClock">--:--:--</div>
+
 <div class="tab-bar">
   <div class="tab-btn active" id="tabBtnChecklist">Checklist</div>
   <div class="tab-btn" id="tabBtnReport">Report</div>
@@ -760,6 +851,11 @@ const CONDITIONS = [
 ];
 
 const DIRECTION_OPTIONS = ['Up', 'Down'];
+
+const ARROW_LABEL = { Up: '&#8593; Up', Down: '&#8595; Down', Neutral: '&#8594; Neutral' };
+function arrowLabel(v) {
+  return ARROW_LABEL[v] || v;
+}
 
 const ZONE_OPTIONS_BY_DIRECTION = {
   Up: ['15m Floor', '15m BuyZone', '1H Floor', '1H BuyZone'],
@@ -894,6 +990,22 @@ function renderPremarket() {
   const complete = premarketComplete();
   card.className = 'premarket-card' + (complete ? ' complete' : '');
 
+  const showEditing = !complete || uiExpanded['premarket'] === true;
+
+  if (complete && !showEditing) {
+    const summary = document.createElement('div');
+    summary.className = 'premarket-summary';
+    summary.innerHTML =
+      '<span class="pm-summary-left"><span class="pm-summary-check">' + CHECK_SVG + '</span><span>Pre-Market Checklist</span></span>' +
+      '<span class="pm-summary-right">All ' + PREMARKET_ITEMS.length + ' complete</span>';
+    summary.addEventListener('click', () => {
+      uiExpanded['premarket'] = true;
+      renderPremarket();
+    });
+    card.appendChild(summary);
+    return;
+  }
+
   PREMARKET_ITEMS.forEach((item, idx) => {
     const priorConfirmed = PREMARKET_ITEMS.slice(0, idx).every(prev => state.premarket[prev.key]);
     const reachable = idx === 0 || priorConfirmed;
@@ -910,6 +1022,9 @@ function renderPremarket() {
         PREMARKET_ITEMS.slice(idx).forEach(later => { state.premarket[later.key] = false; });
       } else {
         state.premarket[item.key] = true;
+      }
+      if (premarketComplete()) {
+        uiExpanded['premarket'] = false;
       }
       saveState();
       render();
@@ -949,7 +1064,7 @@ function renderTrendCard() {
       const valClass = val.toLowerCase();
       summary.innerHTML =
         '<span class="ts-label"><span class="step-num">' + (idx + 1) + '</span>' + t.label + '</span>' +
-        '<span class="ts-right"><span class="ts-value ' + valClass + '">' + val + '</span></span>';
+        '<span class="ts-right"><span class="ts-value ' + valClass + '">' + arrowLabel(val) + '</span></span>';
       summary.addEventListener('click', () => {
         if (!premarketDone) return;
         uiExpanded[uiKey] = true;
@@ -970,7 +1085,7 @@ function renderTrendCard() {
     t.options.forEach(opt => {
       const btn = document.createElement('div');
       btn.className = 'trend-btn ' + opt.toLowerCase() + (val === opt ? ' selected' : '');
-      btn.textContent = opt;
+      btn.innerHTML = arrowLabel(opt);
       btn.addEventListener('click', () => {
         if (!reachable) return;
         state.trends[t.key] = state.trends[t.key] === opt ? null : opt;
@@ -1137,7 +1252,7 @@ function renderTrades() {
           dirHtml = '<span class="dir-na">&mdash;</span>';
         } else {
           const dirClass = cState.direction === 'Up' ? 'dir-up' : 'dir-down';
-          dirHtml = '<span class="' + dirClass + '">' + cState.direction + '</span>';
+          dirHtml = '<span class="' + dirClass + '">' + arrowLabel(cState.direction) + '</span>';
         }
         summary.innerHTML =
           '<span class="cs-left"><span class="step-num">' + (idx + 1) + '</span><span class="cs-name">' + c.label + '</span></span>' +
@@ -1147,6 +1262,17 @@ function renderTrades() {
           uiExpanded[uiKey] = true;
           renderTrades();
         });
+        block.appendChild(summary);
+        card.appendChild(block);
+        return;
+      }
+
+      if (!isConfirmed && !reachable) {
+        const summary = document.createElement('div');
+        summary.className = 'condition-summary condition-summary-pending';
+        summary.innerHTML =
+          '<span class="cs-left"><span class="step-num">' + (idx + 1) + '</span><span class="cs-name">' + c.label + '</span></span>' +
+          '<span class="cs-right"><span class="dir-na">&mdash;</span></span>';
         block.appendChild(summary);
         card.appendChild(block);
         return;
@@ -1190,7 +1316,7 @@ function renderTrades() {
       DIRECTION_OPTIONS.forEach(opt => {
         const btn = document.createElement('div');
         btn.className = 'direction-btn ' + opt.toLowerCase() + (cState.direction === opt ? ' selected' : '');
-        btn.textContent = opt;
+        btn.innerHTML = arrowLabel(opt);
         btn.addEventListener('click', () => applyChange('direction', opt));
         dirCol.appendChild(btn);
       });
@@ -1229,7 +1355,8 @@ function renderTrades() {
       if (!majorityDir) {
         note.textContent = 'Entry items split ' + upCount + '/' + downCount + ' \u2014 need at least 3 of 4 pointing the same way.';
       } else {
-        note.textContent = majorityDir + ' has ' + Math.max(upCount, downCount) + ' of 4 entry items, but neither trend confirms ' + majorityDir + ' \u2014 no trade.';
+        const dirDisplay = arrowLabel(majorityDir).replace('&#8593;', '\u2191').replace('&#8595;', '\u2193');
+        note.textContent = dirDisplay + ' has ' + Math.max(upCount, downCount) + ' of 4 entry items, but neither trend confirms ' + dirDisplay + ' \u2014 no trade.';
       }
       card.appendChild(note);
     }
@@ -1382,7 +1509,7 @@ document.getElementById('newsInput').addEventListener('input', (e) => {
   saveState();
 });
 
-document.getElementById('resetBtn').addEventListener('click', () => {
+function resetFullSession() {
   state = {
     premarket: freshPremarket(),
     trends: freshTrends(),
@@ -1392,7 +1519,37 @@ document.getElementById('resetBtn').addEventListener('click', () => {
   uiExpanded = {};
   saveState();
   render();
+}
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  resetFullSession();
 });
+
+let headerResetArmed = false;
+let headerResetTimer = null;
+const headerResetBtn = document.getElementById('headerResetBtn');
+function renderHeaderResetBtn() {
+  headerResetBtn.className = 'header-reset-btn' + (headerResetArmed ? ' armed' : '');
+  headerResetBtn.innerHTML = headerResetArmed ? 'Confirm?' : '&#8635;';
+  headerResetBtn.title = headerResetArmed ? 'Tap again to reset the whole session' : 'Reset for new session';
+}
+headerResetBtn.addEventListener('click', () => {
+  if (!headerResetArmed) {
+    headerResetArmed = true;
+    renderHeaderResetBtn();
+    if (headerResetTimer) clearTimeout(headerResetTimer);
+    headerResetTimer = setTimeout(() => {
+      headerResetArmed = false;
+      renderHeaderResetBtn();
+    }, 4000);
+    return;
+  }
+  if (headerResetTimer) clearTimeout(headerResetTimer);
+  headerResetArmed = false;
+  renderHeaderResetBtn();
+  resetFullSession();
+});
+renderHeaderResetBtn();
 
 const tabBtnChecklist = document.getElementById('tabBtnChecklist');
 const tabBtnReport = document.getElementById('tabBtnReport');
@@ -1446,14 +1603,15 @@ document.getElementById('themeToggle').addEventListener('click', () => {
 
 loadTheme();
 
-function updateClock() {
+function updateFloatingClock() {
   const now = new Date();
   const h = String(now.getHours()).padStart(2, '0');
   const m = String(now.getMinutes()).padStart(2, '0');
-  document.getElementById('clock').textContent = h + ':' + m;
+  const s = String(now.getSeconds()).padStart(2, '0');
+  document.getElementById('floatingClock').textContent = h + ':' + m + ':' + s;
 }
-updateClock();
-setInterval(updateClock, 15000);
+updateFloatingClock();
+setInterval(updateFloatingClock, 1000);
 
 loadState();
 </script>
