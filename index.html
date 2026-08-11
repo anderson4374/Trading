@@ -174,17 +174,17 @@ h1 {
 .trend-head {
   display: flex; align-items: center; gap: 8px;
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 12.5px; font-weight: 600;
-  color: var(--text-body);
+  font-size: 15px; font-weight: 700;
+  color: var(--text-primary);
   margin-bottom: 7px;
 }
 .trend-head .step-num {
   font-family: 'JetBrains Mono', monospace;
-  width: 16px; height: 16px; border-radius: 5px;
+  width: 19px; height: 19px; border-radius: 6px;
   background: var(--surface-3);
   color: var(--text-muted);
   display: flex; align-items: center; justify-content: center;
-  font-size: 9px;
+  font-size: 10px;
   flex-shrink: 0;
 }
 .trend-item.confirmed .trend-head .step-num { background: #2DE1FC; color: #08202B; }
@@ -193,7 +193,7 @@ h1 {
 
 .trend-btn {
   font-family: 'Inter', sans-serif;
-  font-size: 12px; font-weight: 600;
+  font-size: 12px; font-weight: 500;
   padding: 9px 4px;
   border-radius: 9px;
   text-align: center;
@@ -204,19 +204,29 @@ h1 {
   user-select: none;
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
-.trend-btn.up.selected { background: linear-gradient(135deg, rgba(41,211,152,0.25), rgba(29,169,122,0.16)); border-color: rgba(41,211,152,0.55); color: #5DE8BC; }
-.trend-btn.down.selected { background: linear-gradient(135deg, rgba(255,71,87,0.25), rgba(230,41,75,0.16)); border-color: rgba(255,71,87,0.55); color: #FF8394; }
-.trend-btn.neutral.selected { background: linear-gradient(135deg, rgba(255,210,63,0.25), rgba(255,176,32,0.16)); border-color: rgba(255,210,63,0.55); color: #FFD23F; }
+.trend-btn.up.selected { background: linear-gradient(135deg, rgba(41,211,152,0.25), rgba(29,169,122,0.16)); border-color: rgba(41,211,152,0.55); color: #5DE8BC; font-weight: 700; }
+.trend-btn.down.selected { background: linear-gradient(135deg, rgba(255,71,87,0.25), rgba(230,41,75,0.16)); border-color: rgba(255,71,87,0.55); color: #FF8394; font-weight: 700; }
+.trend-btn.neutral.selected { background: linear-gradient(135deg, rgba(255,210,63,0.25), rgba(255,176,32,0.16)); border-color: rgba(255,210,63,0.55); color: #FFD23F; font-weight: 700; }
 
 .trend-summary {
   display: flex; justify-content: space-between; align-items: center;
   cursor: pointer; user-select: none;
+  margin-right: 18px;
 }
-.trend-summary .ts-label { font-family: 'Space Grotesk', sans-serif; font-size: 12.5px; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
-.trend-summary .ts-value { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; }
+.trend-summary .ts-label { font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 9px; flex: 0 0 auto; }
+.trend-summary .ts-label .step-num {
+  font-family: 'JetBrains Mono', monospace;
+  width: 19px; height: 19px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  flex-shrink: 0;
+  background: #2DE1FC; color: #08202B;
+}
+.trend-summary .ts-value { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; flex: 0 0 52px; text-align: left; }
 .trend-summary .ts-value.up { color: #5DE8BC; }
 .trend-summary .ts-value.down { color: #FF8394; }
 .trend-summary .ts-value.neutral { color: #FFD23F; }
+.ts-right { display: flex; align-items: center; flex: 0 0 176px; }
 
 .pm-item {
   display: flex; align-items: center; gap: 12px;
@@ -476,42 +486,64 @@ h1 {
 
 .condition-head {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
+  align-items: center;
+  gap: 9px;
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--text-body);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
   margin-bottom: 10px;
 }
 
 .condition-head .step-num {
   font-family: 'JetBrains Mono', monospace;
-  width: 18px; height: 18px; border-radius: 5px;
+  width: 22px; height: 22px; border-radius: 6px;
   background: var(--surface-3);
   color: var(--text-muted);
   display: flex; align-items: center; justify-content: center;
-  font-size: 10px;
+  font-size: 11px;
   flex-shrink: 0;
 }
 
 .condition-block.confirmed .condition-head .step-num { background: #2DE1FC; color: #08202B; }
 .condition-block.confirmed .condition-head { color: var(--text-oncolor-strong, var(--text-primary)); }
 
-.condition-body { display: flex; gap: 10px; }
+.condition-body { display: flex; gap: 8px; align-items: stretch; }
 
 .direction-col {
   flex: 0 0 78px;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  background: rgba(124,92,255,0.07);
+  border: 1px solid rgba(124,92,255,0.18);
+  border-radius: 12px;
+  padding: 8px;
 }
 
-.options-col { flex: 1; min-width: 0; }
+.options-col {
+  flex: 1;
+  min-width: 0;
+  background: var(--surface-1);
+  border: 1px solid var(--border-1);
+  border-radius: 12px;
+  padding: 8px;
+}
+
+.col-label {
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.direction-col .col-label { color: #A78BFA; margin-bottom: 0; }
 
 .direction-btn {
   font-family: 'Inter', sans-serif;
-  font-size: 12.5px; font-weight: 600;
+  font-size: 12.5px; font-weight: 500;
   padding: 11px 6px;
   border-radius: 9px;
   text-align: center;
@@ -522,8 +554,8 @@ h1 {
   user-select: none;
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
-.direction-btn.up.selected { background: linear-gradient(135deg, rgba(41,211,152,0.25), rgba(29,169,122,0.16)); border-color: rgba(41,211,152,0.55); color: #5DE8BC; }
-.direction-btn.down.selected { background: linear-gradient(135deg, rgba(255,71,87,0.25), rgba(230,41,75,0.16)); border-color: rgba(255,71,87,0.55); color: #FF8394; }
+.direction-btn.up.selected { background: linear-gradient(135deg, rgba(41,211,152,0.25), rgba(29,169,122,0.16)); border-color: rgba(41,211,152,0.55); color: #5DE8BC; font-weight: 700; }
+.direction-btn.down.selected { background: linear-gradient(135deg, rgba(255,71,87,0.25), rgba(230,41,75,0.16)); border-color: rgba(255,71,87,0.55); color: #FF8394; font-weight: 700; }
 
 .option-grid { display: grid; gap: 6px; }
 
@@ -550,14 +582,23 @@ h1 {
   user-select: none;
 }
 
-.cs-left { display: flex; align-items: center; gap: 8px; font-family: 'Space Grotesk', sans-serif; font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
-.cs-left .step-num { background: #2DE1FC; color: #08202B; }
+.cs-left { display: flex; align-items: center; gap: 9px; font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 700; color: var(--text-primary); flex: 0 0 auto; }
+.cs-left .step-num {
+  font-family: 'JetBrains Mono', monospace;
+  width: 22px; height: 22px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  flex-shrink: 0;
+  background: #2DE1FC; color: #08202B;
+}
 
-.cs-right { display: flex; align-items: center; gap: 6px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; }
+.cs-right { display: flex; align-items: center; justify-content: flex-start; gap: 0; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; flex: 0 0 176px; }
+.cs-right .dir-up, .cs-right .dir-down, .cs-right .dir-na { flex: 0 0 52px; text-align: left; }
+.cs-right .dir-na { color: var(--text-dim); font-weight: 400; }
 .cs-right .dir-up { color: #5DE8BC; }
 .cs-right .dir-down { color: #FF8394; }
-.cs-right .cs-dot { color: var(--text-muted); }
-.cs-right .cs-value { color: var(--text-body); font-weight: 500; }
+.cs-right .cs-dot { flex: 0 0 14px; text-align: center; color: var(--text-muted); }
+.cs-right .cs-value { flex: 1; min-width: 0; text-align: left; color: var(--text-body); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .price-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
 
@@ -629,7 +670,7 @@ h1 {
     </div>
 
     <div class="footer-note">
-      Steps unlock in order &mdash; zone, then SMA20, then SMA200, then signal. A trade unlocks when either all 4 entry items agree on direction, or 3 of 4 agree and at least 1 of 2 trends confirms. Each trade must be closed (stopped out or profit) before the next one unlocks. Two stop-outs, anywhere, ends the day. Two profits in a row also ends the day &mdash; on purpose.
+      Steps unlock in order &mdash; zone, then SMA20, then SMA200, then signal. All 4 must be answered before a trade can proceed, even if alignment is already clear. A trade goes GO when either all 4 entry items agree on direction, or 3 of 4 agree and at least 1 of 2 trends confirms. Each trade must be closed (stopped out or profit) before the next one unlocks. Two stop-outs, anywhere, ends the day. Two profits in a row also ends the day &mdash; on purpose.
     </div>
 
     <button class="reset-btn" id="resetBtn">Reset for new session</button>
@@ -681,10 +722,28 @@ const CONDITIONS = [
   { key: 'zone', label: 'Zone', options: ['15m Floor', '15m Roof', '15m BuyZone', '15m SellZone', '1H Floor', '1H Roof', '1H BuyZone', '1H SellZone'], cols: 2 },
   { key: 'sma20', label: 'SMA20', options: ['Near', 'Away'], cols: 2 },
   { key: 'sma200', label: 'SMA200', options: ['Near', 'Away'], cols: 2 },
-  { key: 'signal', label: 'Signal', options: ['Tail bar', '180'], cols: 2 },
+  { key: 'signal', label: 'Signal', options: ['Tail bar', '180', 'None'], cols: 3 },
 ];
 
 const DIRECTION_OPTIONS = ['Up', 'Down'];
+
+const ZONE_OPTIONS_BY_DIRECTION = {
+  Up: ['15m Floor', '15m BuyZone', '1H Floor', '1H BuyZone'],
+  Down: ['15m Roof', '15m SellZone', '1H Roof', '1H SellZone'],
+};
+
+function optionsFor(c, direction) {
+  if (c.key === 'zone' && direction && ZONE_OPTIONS_BY_DIRECTION[direction]) {
+    return ZONE_OPTIONS_BY_DIRECTION[direction];
+  }
+  return c.options;
+}
+
+function isItemAnswered(trade, c) {
+  const cs = trade[c.key];
+  if (c.key === 'signal' && cs.value === 'None' && cs.direction === null) return true;
+  return cs.value !== null && cs.direction !== null;
+}
 
 const TREND_CONDITIONS = [
   { key: 'h1', label: '1H Trend', options: ['Up', 'Down', 'Neutral'] },
@@ -852,7 +911,7 @@ function renderTrendCard() {
       const valClass = val.toLowerCase();
       summary.innerHTML =
         '<span class="ts-label"><span class="step-num">' + (idx + 1) + '</span>' + t.label + '</span>' +
-        '<span class="ts-value ' + valClass + '">' + val + '</span>';
+        '<span class="ts-right"><span class="ts-value ' + valClass + '">' + val + '</span></span>';
       summary.addEventListener('click', () => {
         if (!premarketDone) return;
         uiExpanded[uiKey] = true;
@@ -909,12 +968,13 @@ function renderTrades() {
   document.getElementById('tradesLockwrap').className = 'trades-lockwrap' + (gateOpen ? '' : ' locked');
 
   state.trades.forEach((trade, i) => {
-    const confirmedCount = CONDITIONS.filter(c => trade[c.key].value !== null && trade[c.key].direction !== null).length;
+    const confirmedCount = CONDITIONS.filter(c => isItemAnswered(trade, c)).length;
     const allFilled = confirmedCount === CONDITIONS.length;
 
     let aligned = false;
     let majorityDir = null;
     let unanimous = false;
+
     if (allFilled) {
       const dirs = CONDITIONS.map(c => trade[c.key].direction);
       const upCount = dirs.filter(d => d === 'Up').length;
@@ -925,7 +985,9 @@ function renderTrades() {
         aligned = unanimous || state.trends.h1 === majorityDir || state.trends.m15 === majorityDir;
       }
     }
-    const allGo = allFilled && aligned;
+
+    const readyToTrade = allFilled;
+    const allGo = readyToTrade && aligned;
     const notAligned = allFilled && !aligned;
 
     const prevResolved = i === 0 || state.trades[i - 1].outcome !== null;
@@ -974,9 +1036,9 @@ function renderTrades() {
 
     CONDITIONS.forEach((c, idx) => {
       const cState = trade[c.key];
-      const priorConfirmed = CONDITIONS.slice(0, idx).every(prev => trade[prev.key].value !== null && trade[prev.key].direction !== null);
+      const priorConfirmed = CONDITIONS.slice(0, idx).every(prev => isItemAnswered(trade, prev));
       const reachable = !checklistLocked && (idx === 0 || priorConfirmed);
-      const isConfirmed = cState.value !== null && cState.direction !== null;
+      const isConfirmed = isItemAnswered(trade, c);
       const uiKey = i + ':' + c.key;
       const showEditing = !isConfirmed || uiExpanded[uiKey] === true;
 
@@ -986,10 +1048,16 @@ function renderTrades() {
       if (isConfirmed && !showEditing) {
         const summary = document.createElement('div');
         summary.className = 'condition-summary';
-        const dirClass = cState.direction === 'Up' ? 'dir-up' : 'dir-down';
+        let dirHtml;
+        if (cState.direction === null) {
+          dirHtml = '<span class="dir-na">&mdash;</span>';
+        } else {
+          const dirClass = cState.direction === 'Up' ? 'dir-up' : 'dir-down';
+          dirHtml = '<span class="' + dirClass + '">' + cState.direction + '</span>';
+        }
         summary.innerHTML =
           '<span class="cs-left"><span class="step-num">' + (idx + 1) + '</span><span class="cs-name">' + c.label + '</span></span>' +
-          '<span class="cs-right"><span class="' + dirClass + '">' + cState.direction + '</span><span class="cs-dot">&middot;</span><span class="cs-value">' + cState.value + '</span></span>';
+          '<span class="cs-right">' + dirHtml + '<span class="cs-dot">&middot;</span><span class="cs-value">' + cState.value + '</span></span>';
         summary.addEventListener('click', () => {
           if (checklistLocked) return;
           uiExpanded[uiKey] = true;
@@ -1009,11 +1077,17 @@ function renderTrades() {
         if (!reachable) return;
         const cur = trade[c.key];
         cur[field] = cur[field] === val ? null : val;
+        if (field === 'direction' && c.key === 'zone' && cur.value !== null) {
+          const validOptions = optionsFor(c, cur.direction);
+          if (!validOptions.includes(cur.value)) {
+            cur.value = null;
+          }
+        }
         CONDITIONS.slice(idx + 1).forEach(later => {
           trade[later.key] = freshConditionState();
           delete uiExpanded[i + ':' + later.key];
         });
-        if (cur.value !== null && cur.direction !== null) {
+        if (isItemAnswered(trade, c)) {
           uiExpanded[uiKey] = false;
         }
         saveState();
@@ -1025,6 +1099,10 @@ function renderTrades() {
 
       const dirCol = document.createElement('div');
       dirCol.className = 'direction-col';
+      const dirLabel = document.createElement('span');
+      dirLabel.className = 'col-label';
+      dirLabel.textContent = 'Direction';
+      dirCol.appendChild(dirLabel);
       DIRECTION_OPTIONS.forEach(opt => {
         const btn = document.createElement('div');
         btn.className = 'direction-btn ' + opt.toLowerCase() + (cState.direction === opt ? ' selected' : '');
@@ -1036,10 +1114,15 @@ function renderTrades() {
 
       const optCol = document.createElement('div');
       optCol.className = 'options-col';
+      const optLabel = document.createElement('span');
+      optLabel.className = 'col-label';
+      optLabel.textContent = 'Option';
+      optCol.appendChild(optLabel);
       const grid = document.createElement('div');
       grid.className = 'option-grid';
-      grid.style.gridTemplateColumns = 'repeat(' + c.cols + ', 1fr)';
-      c.options.forEach(opt => {
+      const visibleOptions = optionsFor(c, cState.direction);
+      grid.style.gridTemplateColumns = 'repeat(' + Math.min(c.cols, visibleOptions.length) + ', 1fr)';
+      visibleOptions.forEach(opt => {
         const btn = document.createElement('div');
         btn.className = 'option-btn' + (cState.value === opt ? ' selected' : '');
         btn.textContent = opt;
