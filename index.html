@@ -323,6 +323,61 @@ h1 {
 .pm-item.pending .pm-label { color: var(--text-muted); }
 
 .trades-lockwrap.locked { opacity: 0.3; pointer-events: none; }
+
+.extra-trades-header { margin-bottom: 10px; }
+.extra-trades-note {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #FFA669;
+  background: rgba(255,138,61,0.1);
+  border: 1px solid rgba(255,138,61,0.3);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-top: 8px;
+}
+
+.extra-trade-card {
+  background: linear-gradient(145deg, var(--card-grad-a), var(--card-grad-b));
+  border: 1px solid rgba(255,138,61,0.35);
+  border-left: 4px solid #FF8A3D;
+  border-radius: 16px;
+  padding: 16px 18px 18px;
+  margin-bottom: 12px;
+  box-shadow: var(--card-shadow);
+}
+.extra-trade-card.stopped { border-left-color: #FF4757; }
+.extra-trade-card.closed-clean { border-left-color: #29D398; }
+
+.extra-trade-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #FFA669;
+  background: rgba(255,138,61,0.14);
+  border: 1px solid rgba(255,138,61,0.35);
+  border-radius: 999px;
+  padding: 3px 9px;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+.extra-trade-add-btn {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  background: rgba(255,138,61,0.1);
+  border: 1.5px dashed rgba(255,138,61,0.45);
+  color: #FFA669;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+.extra-trade-add-btn:active { transform: scale(0.98); background: rgba(255,138,61,0.16); }
 .premarket-gate-note { text-align: center; font-size: 12px; color: var(--text-muted); padding: 10px 4px 4px; }
 
 .trade-card {
@@ -792,6 +847,15 @@ h1 {
       <div id="trades"></div>
     </div>
 
+    <div id="extraTradesSection" style="display:none;">
+      <div class="extra-trades-header">
+        <span class="section-label" style="margin-top:0;">Off-Protocol Trades</span>
+        <div class="extra-trades-note">Anything logged here happened after your 2-Stop/2-Win Protocol already said stop, or past your max 3 trades. It's recorded for your own honesty, not encouraged &mdash; every one of these counts against your compliance score.</div>
+      </div>
+      <div id="extraTrades"></div>
+      <button class="extra-trade-add-btn" id="addExtraTradeBtn">+ Log another trade taken outside the plan</button>
+    </div>
+
     <div class="footer-note">
       Steps unlock in order &mdash; zone, then SMA20, then SMA200, then signal. All 4 must be answered before a trade can proceed, even if alignment is already clear. A trade goes GO when either all 4 entry items agree on direction, or 3 of 4 agree and at least 1 of 2 trends confirms. Each trade must be closed (stopped out or profit) before the next one unlocks. Two stop-outs, anywhere, ends the day. Two profits in a row also ends the day &mdash; on purpose.
     </div>
@@ -929,6 +993,7 @@ let state = {
   premarket: freshPremarket(),
   trends: freshTrends(),
   trades: [freshTrade(), freshTrade(), freshTrade()],
+  extraTrades: [],
   report: {
     volume: null, volatility: null, continuity: null, news: ''
   }
@@ -952,6 +1017,9 @@ async function loadState() {
         }
         if (!state.trends) {
           state.trends = freshTrends();
+        }
+        if (!Array.isArray(state.extraTrades) || !state.extraTrades.every(t => t && t.zone && typeof t.zone === 'object' && 'value' in t.zone)) {
+          state.extraTrades = [];
         }
       }
     }
@@ -1106,6 +1174,121 @@ function renderTrendCard() {
   });
 }
 
+function renderConditionsInto(card, trade, uiKeyPrefix, checklistLocked, onChange) {
+  CONDITIONS.forEach((c, idx) => {
+    const cState = trade[c.key];
+    const priorConfirmed = CONDITIONS.slice(0, idx).every(prev => isItemAnswered(trade, prev));
+    const reachable = !checklistLocked && (idx === 0 || priorConfirmed);
+    const isConfirmed = isItemAnswered(trade, c);
+    const uiKey = uiKeyPrefix + ':' + c.key;
+    const showEditing = !isConfirmed || uiExpanded[uiKey] === true;
+
+    const block = document.createElement('div');
+    block.className = 'condition-block' + (isConfirmed ? ' confirmed' : '') + (!reachable ? ' pending' : '');
+
+    if (isConfirmed && !showEditing) {
+      const summary = document.createElement('div');
+      summary.className = 'condition-summary';
+      let dirHtml;
+      if (cState.direction === null) {
+        dirHtml = '<span class="dir-na">&mdash;</span>';
+      } else {
+        const dirClass = cState.direction === 'Up' ? 'dir-up' : 'dir-down';
+        dirHtml = '<span class="' + dirClass + '">' + arrowLabel(cState.direction) + '</span>';
+      }
+      summary.innerHTML =
+        '<span class="cs-left"><span class="step-num">' + (idx + 1) + '</span><span class="cs-name">' + c.label + '</span></span>' +
+        '<span class="cs-right">' + dirHtml + '<span class="cs-dot">&middot;</span><span class="cs-value">' + cState.value + '</span></span>';
+      summary.addEventListener('click', () => {
+        if (checklistLocked) return;
+        uiExpanded[uiKey] = true;
+        onChange();
+      });
+      block.appendChild(summary);
+      card.appendChild(block);
+      return;
+    }
+
+    if (!isConfirmed && !reachable) {
+      const summary = document.createElement('div');
+      summary.className = 'condition-summary condition-summary-pending';
+      summary.innerHTML =
+        '<span class="cs-left"><span class="step-num">' + (idx + 1) + '</span><span class="cs-name">' + c.label + '</span></span>' +
+        '<span class="cs-right"><span class="dir-na">&mdash;</span></span>';
+      block.appendChild(summary);
+      card.appendChild(block);
+      return;
+    }
+
+    const headRow = document.createElement('div');
+    headRow.className = 'condition-head';
+    headRow.innerHTML = '<span class="step-num">' + (idx + 1) + '</span><span>' + c.label + '</span>';
+    block.appendChild(headRow);
+
+    const applyChange = (field, val) => {
+      if (!reachable) return;
+      const cur = trade[c.key];
+      cur[field] = cur[field] === val ? null : val;
+      if (field === 'direction' && c.key === 'zone' && cur.value !== null) {
+        const validOptions = optionsFor(c, cur.direction);
+        if (!validOptions.includes(cur.value)) {
+          cur.value = null;
+        }
+      }
+      CONDITIONS.slice(idx + 1).forEach(later => {
+        trade[later.key] = freshConditionState();
+        delete uiExpanded[uiKeyPrefix + ':' + later.key];
+      });
+      if (isItemAnswered(trade, c)) {
+        uiExpanded[uiKey] = false;
+      }
+      saveState();
+      onChange();
+    };
+
+    const body = document.createElement('div');
+    body.className = 'condition-body';
+
+    const dirCol = document.createElement('div');
+    dirCol.className = 'direction-col';
+    const dirLabel = document.createElement('span');
+    dirLabel.className = 'col-label';
+    dirLabel.textContent = 'Direction';
+    dirCol.appendChild(dirLabel);
+    DIRECTION_OPTIONS.forEach(opt => {
+      const btn = document.createElement('div');
+      btn.className = 'direction-btn ' + opt.toLowerCase() + (cState.direction === opt ? ' selected' : '');
+      btn.innerHTML = arrowLabel(opt);
+      btn.addEventListener('click', () => applyChange('direction', opt));
+      dirCol.appendChild(btn);
+    });
+    body.appendChild(dirCol);
+
+    const optCol = document.createElement('div');
+    optCol.className = 'options-col';
+    const optLabel = document.createElement('span');
+    optLabel.className = 'col-label';
+    optLabel.textContent = 'Option';
+    optCol.appendChild(optLabel);
+    const grid = document.createElement('div');
+    grid.className = 'option-grid';
+    const visibleOptions = optionsFor(c, cState.direction);
+    grid.style.gridTemplateColumns = 'repeat(' + Math.min(c.cols, visibleOptions.length) + ', 1fr)';
+    visibleOptions.forEach(opt => {
+      const btn = document.createElement('div');
+      btn.className = 'option-btn' + (cState.value === opt ? ' selected' : '');
+      btn.textContent = opt;
+      btn.addEventListener('click', () => applyChange('value', opt));
+      grid.appendChild(btn);
+    });
+    optCol.appendChild(grid);
+    body.appendChild(optCol);
+
+    block.appendChild(body);
+    card.appendChild(block);
+  });
+}
+
 function renderTrades() {
   const container = document.getElementById('trades');
   container.innerHTML = '';
@@ -1233,118 +1416,7 @@ function renderTrades() {
 
     const checklistLocked = trade.outcome !== null || cardAwaiting;
 
-    CONDITIONS.forEach((c, idx) => {
-      const cState = trade[c.key];
-      const priorConfirmed = CONDITIONS.slice(0, idx).every(prev => isItemAnswered(trade, prev));
-      const reachable = !checklistLocked && (idx === 0 || priorConfirmed);
-      const isConfirmed = isItemAnswered(trade, c);
-      const uiKey = i + ':' + c.key;
-      const showEditing = !isConfirmed || uiExpanded[uiKey] === true;
-
-      const block = document.createElement('div');
-      block.className = 'condition-block' + (isConfirmed ? ' confirmed' : '') + (!reachable ? ' pending' : '');
-
-      if (isConfirmed && !showEditing) {
-        const summary = document.createElement('div');
-        summary.className = 'condition-summary';
-        let dirHtml;
-        if (cState.direction === null) {
-          dirHtml = '<span class="dir-na">&mdash;</span>';
-        } else {
-          const dirClass = cState.direction === 'Up' ? 'dir-up' : 'dir-down';
-          dirHtml = '<span class="' + dirClass + '">' + arrowLabel(cState.direction) + '</span>';
-        }
-        summary.innerHTML =
-          '<span class="cs-left"><span class="step-num">' + (idx + 1) + '</span><span class="cs-name">' + c.label + '</span></span>' +
-          '<span class="cs-right">' + dirHtml + '<span class="cs-dot">&middot;</span><span class="cs-value">' + cState.value + '</span></span>';
-        summary.addEventListener('click', () => {
-          if (checklistLocked) return;
-          uiExpanded[uiKey] = true;
-          renderTrades();
-        });
-        block.appendChild(summary);
-        card.appendChild(block);
-        return;
-      }
-
-      if (!isConfirmed && !reachable) {
-        const summary = document.createElement('div');
-        summary.className = 'condition-summary condition-summary-pending';
-        summary.innerHTML =
-          '<span class="cs-left"><span class="step-num">' + (idx + 1) + '</span><span class="cs-name">' + c.label + '</span></span>' +
-          '<span class="cs-right"><span class="dir-na">&mdash;</span></span>';
-        block.appendChild(summary);
-        card.appendChild(block);
-        return;
-      }
-
-      const headRow = document.createElement('div');
-      headRow.className = 'condition-head';
-      headRow.innerHTML = '<span class="step-num">' + (idx + 1) + '</span><span>' + c.label + '</span>';
-      block.appendChild(headRow);
-
-      const applyChange = (field, val) => {
-        if (!reachable) return;
-        const cur = trade[c.key];
-        cur[field] = cur[field] === val ? null : val;
-        if (field === 'direction' && c.key === 'zone' && cur.value !== null) {
-          const validOptions = optionsFor(c, cur.direction);
-          if (!validOptions.includes(cur.value)) {
-            cur.value = null;
-          }
-        }
-        CONDITIONS.slice(idx + 1).forEach(later => {
-          trade[later.key] = freshConditionState();
-          delete uiExpanded[i + ':' + later.key];
-        });
-        if (isItemAnswered(trade, c)) {
-          uiExpanded[uiKey] = false;
-        }
-        saveState();
-        renderTrades();
-      };
-
-      const body = document.createElement('div');
-      body.className = 'condition-body';
-
-      const dirCol = document.createElement('div');
-      dirCol.className = 'direction-col';
-      const dirLabel = document.createElement('span');
-      dirLabel.className = 'col-label';
-      dirLabel.textContent = 'Direction';
-      dirCol.appendChild(dirLabel);
-      DIRECTION_OPTIONS.forEach(opt => {
-        const btn = document.createElement('div');
-        btn.className = 'direction-btn ' + opt.toLowerCase() + (cState.direction === opt ? ' selected' : '');
-        btn.innerHTML = arrowLabel(opt);
-        btn.addEventListener('click', () => applyChange('direction', opt));
-        dirCol.appendChild(btn);
-      });
-      body.appendChild(dirCol);
-
-      const optCol = document.createElement('div');
-      optCol.className = 'options-col';
-      const optLabel = document.createElement('span');
-      optLabel.className = 'col-label';
-      optLabel.textContent = 'Option';
-      optCol.appendChild(optLabel);
-      const grid = document.createElement('div');
-      grid.className = 'option-grid';
-      const visibleOptions = optionsFor(c, cState.direction);
-      grid.style.gridTemplateColumns = 'repeat(' + Math.min(c.cols, visibleOptions.length) + ', 1fr)';
-      visibleOptions.forEach(opt => {
-        const btn = document.createElement('div');
-        btn.className = 'option-btn' + (cState.value === opt ? ' selected' : '');
-        btn.textContent = opt;
-        btn.addEventListener('click', () => applyChange('value', opt));
-        grid.appendChild(btn);
-      });
-      optCol.appendChild(grid);
-      body.appendChild(optCol);
-
-      block.appendChild(body);
-      card.appendChild(block);
-    });
+    renderConditionsInto(card, trade, i + '', checklistLocked, renderTrades);
 
     if (notAligned) {
       const note = document.createElement('div');
@@ -1437,6 +1509,181 @@ function renderTrades() {
   });
 }
 
+function shouldShowExtraTradesSection() {
+  const stops = totalStops();
+  const stopLocked = stops >= 2;
+  const profitLocked = profitStreakIndex() !== -1;
+  const officialTradesExhausted = state.trades.every(t => t.outcome !== null);
+  return stopLocked || profitLocked || officialTradesExhausted || state.extraTrades.length > 0;
+}
+
+function renderExtraTrades() {
+  const section = document.getElementById('extraTradesSection');
+  const container = document.getElementById('extraTrades');
+  const show = shouldShowExtraTradesSection();
+  section.style.display = show ? 'block' : 'none';
+  if (!show) return;
+
+  container.innerHTML = '';
+
+  state.extraTrades.forEach((trade, i) => {
+    const confirmedCount = CONDITIONS.filter(c => isItemAnswered(trade, c)).length;
+    const allFilled = confirmedCount === CONDITIONS.length;
+
+    let aligned = false;
+    if (allFilled) {
+      const dirs = CONDITIONS.map(c => trade[c.key].direction);
+      const upCount = dirs.filter(d => d === 'Up').length;
+      const downCount = dirs.filter(d => d === 'Down').length;
+      const majorityDir = upCount >= 3 ? 'Up' : (downCount >= 3 ? 'Down' : null);
+      const unanimous = upCount === 4 || downCount === 4;
+      if (majorityDir) {
+        aligned = unanimous || state.trends.h1 === majorityDir || state.trends.m15 === majorityDir;
+      }
+    }
+    const canResolve = allFilled;
+
+    const card = document.createElement('div');
+    let statusClass = '';
+    if (trade.outcome === 'stopped') statusClass = ' stopped';
+    else if (trade.outcome === 'clean') statusClass = ' closed-clean';
+    card.className = 'extra-trade-card' + statusClass;
+
+    const tag = document.createElement('div');
+    tag.className = 'extra-trade-tag';
+    tag.textContent = 'OFF-PROTOCOL &middot; TRADE ' + (i + 4);
+    tag.innerHTML = 'OFF-PROTOCOL &middot; TRADE ' + (i + 4);
+    card.appendChild(tag);
+
+    const head = document.createElement('div');
+    head.className = 'trade-head';
+    let badgeClass = '', badgeText = 'NOT LOGGED';
+    if (trade.outcome === 'stopped') { badgeClass = ' stopped'; badgeText = 'STOPPED OUT'; }
+    else if (trade.outcome === 'clean') { badgeClass = ' closed-clean'; badgeText = 'PROFIT'; }
+    else if (allFilled) { badgeClass = aligned ? ' go' : ' not-aligned'; badgeText = aligned ? 'GO' : 'NOT ALIGNED'; }
+
+    const nameWrap = document.createElement('div');
+    nameWrap.className = 'trade-name-wrap';
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'trade-name';
+    nameSpan.textContent = 'Extra Trade ' + (i + 1);
+    nameWrap.appendChild(nameSpan);
+
+    const resetKey = 'extrareset:' + i;
+    const isArmed = resetArmed[resetKey] === true;
+    const removeBtn = document.createElement('span');
+    removeBtn.className = 'trade-reset-btn' + (isArmed ? ' armed' : '');
+    removeBtn.title = isArmed ? 'Tap again to remove this entry' : 'Remove this entry';
+    removeBtn.innerHTML = isArmed ? 'Confirm?' : '&#8635;';
+    removeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!isArmed) {
+        resetArmed[resetKey] = true;
+        if (resetArmTimers[resetKey]) clearTimeout(resetArmTimers[resetKey]);
+        resetArmTimers[resetKey] = setTimeout(() => {
+          delete resetArmed[resetKey];
+          renderExtraTrades();
+        }, 4000);
+        renderExtraTrades();
+        return;
+      }
+      if (resetArmTimers[resetKey]) clearTimeout(resetArmTimers[resetKey]);
+      delete resetArmed[resetKey];
+      state.extraTrades.splice(i, 1);
+      Object.keys(uiExpanded).forEach(k => {
+        if (k.startsWith('extra' + i + ':')) delete uiExpanded[k];
+      });
+      saveState();
+      render();
+    });
+    nameWrap.appendChild(removeBtn);
+
+    const badgeSpan = document.createElement('span');
+    badgeSpan.className = 'badge' + badgeClass;
+    badgeSpan.textContent = badgeText;
+
+    head.appendChild(nameWrap);
+    head.appendChild(badgeSpan);
+    card.appendChild(head);
+
+    const checklistLocked = trade.outcome !== null;
+    renderConditionsInto(card, trade, 'extra' + i, checklistLocked, renderExtraTrades);
+
+    if (trade.outcome === null) {
+      if (canResolve) {
+        const priceRow = document.createElement('div');
+        priceRow.className = 'price-row';
+
+        const stopField = document.createElement('div');
+        stopField.className = 'price-field';
+        stopField.innerHTML = '<span class="price-label">Stop (pts)</span>';
+        const stopInput = document.createElement('input');
+        stopInput.type = 'text';
+        stopInput.inputMode = 'decimal';
+        stopInput.placeholder = 'e.g. 40';
+        stopInput.className = 'price-input';
+        stopInput.value = trade.stopPoints || '';
+        stopInput.addEventListener('input', (e) => { trade.stopPoints = e.target.value; saveState(); });
+        stopField.appendChild(stopInput);
+
+        const targetField = document.createElement('div');
+        targetField.className = 'price-field';
+        targetField.innerHTML = '<span class="price-label">Target (pts)</span>';
+        const targetInput = document.createElement('input');
+        targetInput.type = 'text';
+        targetInput.inputMode = 'decimal';
+        targetInput.placeholder = 'e.g. 60';
+        targetInput.className = 'price-input';
+        targetInput.value = trade.targetPoints || '';
+        targetInput.addEventListener('input', (e) => { trade.targetPoints = e.target.value; saveState(); });
+        targetField.appendChild(targetInput);
+
+        priceRow.appendChild(stopField);
+        priceRow.appendChild(targetField);
+        card.appendChild(priceRow);
+      }
+
+      const row = document.createElement('div');
+      row.className = 'resolve-row';
+
+      const stopBtn = document.createElement('div');
+      stopBtn.className = 'resolve-btn stop-btn' + (canResolve ? '' : ' awaiting-entry');
+      stopBtn.textContent = 'Stopped out';
+      stopBtn.addEventListener('click', () => {
+        if (!canResolve) return;
+        trade.outcome = 'stopped';
+        saveState();
+        render();
+      });
+
+      const cleanBtn = document.createElement('div');
+      cleanBtn.className = 'resolve-btn clean-btn' + (canResolve ? '' : ' awaiting-entry');
+      cleanBtn.textContent = 'Profit';
+      cleanBtn.addEventListener('click', () => {
+        if (!canResolve) return;
+        trade.outcome = 'clean';
+        saveState();
+        render();
+      });
+
+      row.appendChild(stopBtn);
+      row.appendChild(cleanBtn);
+      card.appendChild(row);
+    } else {
+      const resolvedTag = document.createElement('div');
+      resolvedTag.className = 'resolved-tag ' + (trade.outcome === 'stopped' ? 'stopped' : 'closed-clean');
+      let tagText = trade.outcome === 'stopped' ? 'Stopped out' : 'Profit logged';
+      if (trade.stopPoints || trade.targetPoints) {
+        tagText += '  ·  Stop ' + (trade.stopPoints ? trade.stopPoints + 'pts' : '&mdash;') + ' / Target ' + (trade.targetPoints ? trade.targetPoints + 'pts' : '&mdash;');
+      }
+      resolvedTag.innerHTML = tagText;
+      card.appendChild(resolvedTag);
+    }
+
+    container.appendChild(card);
+  });
+}
+
 function renderStopStatus() {
   const stops = totalStops();
   const profitLockAt = profitStreakIndex();
@@ -1501,8 +1748,15 @@ function render() {
   renderTrendCard();
   renderStopStatus();
   renderTrades();
+  renderExtraTrades();
   renderReport();
 }
+
+document.getElementById('addExtraTradeBtn').addEventListener('click', () => {
+  state.extraTrades.push(freshTrade());
+  saveState();
+  render();
+});
 
 document.getElementById('newsInput').addEventListener('input', (e) => {
   state.report.news = e.target.value;
@@ -1514,6 +1768,7 @@ function resetFullSession() {
     premarket: freshPremarket(),
     trends: freshTrends(),
     trades: [freshTrade(), freshTrade(), freshTrade()],
+    extraTrades: [],
     report: { volume: null, volatility: null, continuity: null, news: '' }
   };
   uiExpanded = {};
