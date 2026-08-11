@@ -514,6 +514,24 @@ h1 {
 }
 .reset-btn:active { transform: scale(0.98); background: rgba(255,71,87,0.18); }
 
+.export-btn {
+  display: block; width: 100%; margin: 22px auto 0;
+  background: rgba(45,225,252,0.1); border: 1.5px solid rgba(45,225,252,0.4); color: var(--accent-teal);
+  font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 14px;
+  padding: 13px 16px; border-radius: 12px; cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+.export-btn:active { transform: scale(0.98); background: rgba(45,225,252,0.16); }
+
+.export-note {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-faint);
+  margin-top: 10px;
+  padding: 0 12px;
+  line-height: 1.6;
+}
+
 /* ===== TAB BAR ===== */
 .tab-bar {
   position: fixed;
@@ -884,6 +902,9 @@ h1 {
         <textarea class="news-input" id="newsInput" placeholder="Any scheduled news today?"></textarea>
       </div>
     </div>
+
+    <button class="export-btn" id="exportBtn">&#8593; Export today's journal</button>
+    <div class="export-note">Saves a full record of today &mdash; premarket, trends, every trade, and this report &mdash; as a file you can save to iCloud Drive, Google Drive, or anywhere else.</div>
   </div>
 
 </div>
@@ -1756,6 +1777,83 @@ document.getElementById('addExtraTradeBtn').addEventListener('click', () => {
   state.extraTrades.push(freshTrade());
   saveState();
   render();
+});
+
+function computeTradeAlignment(trade) {
+  const confirmedCount = CONDITIONS.filter(c => isItemAnswered(trade, c)).length;
+  const allFilled = confirmedCount === CONDITIONS.length;
+  if (!allFilled) return trade.outcome ? 'resolved-incomplete-entries' : 'incomplete';
+  const dirs = CONDITIONS.map(c => trade[c.key].direction);
+  const upCount = dirs.filter(d => d === 'Up').length;
+  const downCount = dirs.filter(d => d === 'Down').length;
+  const majorityDir = upCount >= 3 ? 'Up' : (downCount >= 3 ? 'Down' : null);
+  const unanimous = upCount === 4 || downCount === 4;
+  if (!majorityDir) return 'not_aligned';
+  const aligned = unanimous || state.trends.h1 === majorityDir || state.trends.m15 === majorityDir;
+  return aligned ? 'go' : 'not_aligned';
+}
+
+function formatTradeForExport(trade) {
+  const entries = {};
+  CONDITIONS.forEach(c => {
+    entries[c.key] = { direction: trade[c.key].direction, value: trade[c.key].value };
+  });
+  return {
+    outcome: trade.outcome === 'clean' ? 'profit' : (trade.outcome === 'stopped' ? 'stopped_out' : 'not_taken'),
+    stopPoints: trade.stopPoints || null,
+    targetPoints: trade.targetPoints || null,
+    entries: entries,
+    alignment: computeTradeAlignment(trade)
+  };
+}
+
+function buildJournalExport() {
+  const dateStr = todayKey().replace('mnq-cockpit:', '');
+  return {
+    date: dateStr,
+    instrument: 'MNQ',
+    premarketChecklistComplete: premarketComplete(),
+    trends: { h1: state.trends.h1, m15: state.trends.m15 },
+    officialTrades: state.trades.map(formatTradeForExport),
+    offProtocolTrades: state.extraTrades.map(formatTradeForExport),
+    stopsToday: totalStops(),
+    dayReport: {
+      volume: state.report.volume,
+      volatility: state.report.volatility,
+      continuity: state.report.continuity,
+      news: state.report.news
+    },
+    exportedAt: new Date().toISOString()
+  };
+}
+
+document.getElementById('exportBtn').addEventListener('click', async () => {
+  const data = buildJournalExport();
+  const json = JSON.stringify(data, null, 2);
+  const filename = 'MNQ-Journal-' + data.date + '.json';
+  const blob = new Blob([json], { type: 'application/json' });
+  const file = new File([blob], filename, { type: 'application/json' });
+
+  const canUseShare = navigator.canShare && navigator.canShare({ files: [file] });
+
+  if (canUseShare) {
+    try {
+      await navigator.share({ files: [file], title: 'MNQ Trading Journal \u2014 ' + data.date });
+    } catch (e) {
+      // User cancelled the share sheet, or share failed after opening — either way,
+      // don't force a download on top of it. Just stop.
+    }
+    return;
+  }
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 });
 
 document.getElementById('newsInput').addEventListener('input', (e) => {
