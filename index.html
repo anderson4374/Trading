@@ -25,6 +25,9 @@
   --text-faint: #545C70;
   --text-oncolor: #EAFBFF;
   --accent-teal: #6FE3D6;
+  --text-green: #5DE8BC;
+  --text-red: #FF8394;
+  --text-amber: #FFD23F;
   --card-grad-a: #232c48;
   --card-grad-b: #171e33;
   --card-nested-a: #1c2338;
@@ -51,6 +54,9 @@
   --text-faint: #6B7482;
   --text-oncolor: #063542;
   --accent-teal: #0A7D71;
+  --text-green: #066B49;
+  --text-red: #B81C2E;
+  --text-amber: #6B4A00;
   --card-grad-a: #FFFFFF;
   --card-grad-b: #FAFBFD;
   --card-nested-a: #F7F9FC;
@@ -204,9 +210,9 @@ h1 {
   user-select: none;
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
-.trend-btn.up.selected { background: linear-gradient(135deg, rgba(41,211,152,0.25), rgba(29,169,122,0.16)); border-color: rgba(41,211,152,0.55); color: #5DE8BC; font-weight: 700; }
-.trend-btn.down.selected { background: linear-gradient(135deg, rgba(255,71,87,0.25), rgba(230,41,75,0.16)); border-color: rgba(255,71,87,0.55); color: #FF8394; font-weight: 700; }
-.trend-btn.neutral.selected { background: linear-gradient(135deg, rgba(255,210,63,0.25), rgba(255,176,32,0.16)); border-color: rgba(255,210,63,0.55); color: #FFD23F; font-weight: 700; }
+.trend-btn.up.selected { background: linear-gradient(135deg, rgba(41,211,152,0.25), rgba(29,169,122,0.16)); border-color: rgba(41,211,152,0.55); color: var(--text-green); font-weight: 700; }
+.trend-btn.down.selected { background: linear-gradient(135deg, rgba(255,71,87,0.25), rgba(230,41,75,0.16)); border-color: rgba(255,71,87,0.55); color: var(--text-red); font-weight: 700; }
+.trend-btn.neutral.selected { background: linear-gradient(135deg, rgba(255,210,63,0.25), rgba(255,176,32,0.16)); border-color: rgba(255,210,63,0.55); color: var(--text-amber); font-weight: 700; }
 
 .trend-summary {
   display: flex; justify-content: space-between; align-items: center;
@@ -223,9 +229,9 @@ h1 {
   background: #2DE1FC; color: #08202B;
 }
 .trend-summary .ts-value { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; flex: 0 0 52px; text-align: left; }
-.trend-summary .ts-value.up { color: #5DE8BC; }
-.trend-summary .ts-value.down { color: #FF8394; }
-.trend-summary .ts-value.neutral { color: #FFD23F; }
+.trend-summary .ts-value.up { color: var(--text-green); }
+.trend-summary .ts-value.down { color: var(--text-red); }
+.trend-summary .ts-value.neutral { color: var(--text-amber); }
 .ts-right { display: flex; align-items: center; flex: 0 0 176px; }
 
 .pm-item {
@@ -275,7 +281,35 @@ h1 {
 .trade-card.awaiting { opacity: 0.32; pointer-events: none; }
 
 .trade-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.trade-name-wrap { display: flex; align-items: center; gap: 8px; }
 .trade-name { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 16px; }
+.trade-reset-btn {
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  width: 25px; height: 25px;
+  padding: 0;
+  border-radius: 50%;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  font-family: 'Inter', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease, transform 0.15s ease, width 0.15s ease, border-radius 0.15s ease;
+}
+.trade-reset-btn:active { transform: scale(0.95); }
+.trade-reset-btn.armed {
+  width: auto;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #FF4757, #D6293D);
+  border-color: transparent;
+  animation: pulse-glow 1.2s ease-in-out infinite;
+}
 
 .badge {
   font-family: 'Space Grotesk', sans-serif;
@@ -325,13 +359,13 @@ h1 {
 }
 .resolve-btn:active { transform: scale(0.97); }
 .resolve-btn.awaiting-entry { opacity: 0.35; pointer-events: none; }
-.resolve-btn.stop-btn { background: linear-gradient(135deg, rgba(255,71,87,0.22), rgba(230,41,75,0.14)); border-color: rgba(255,71,87,0.5); color: #FF8394; }
-.resolve-btn.clean-btn { background: linear-gradient(135deg, rgba(41,211,152,0.22), rgba(29,169,122,0.14)); border-color: rgba(41,211,152,0.5); color: #5DE8BC; }
+.resolve-btn.stop-btn { background: linear-gradient(135deg, rgba(255,71,87,0.22), rgba(230,41,75,0.14)); border-color: rgba(255,71,87,0.5); color: var(--text-red); }
+.resolve-btn.clean-btn { background: linear-gradient(135deg, rgba(41,211,152,0.22), rgba(29,169,122,0.14)); border-color: rgba(41,211,152,0.5); color: var(--text-green); }
 .resolve-btn.awaiting-entry.stop-btn, .resolve-btn.awaiting-entry.clean-btn { background: var(--surface-1); border-color: var(--border-2); color: var(--text-muted); }
 
 .resolved-tag { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; text-align: center; padding: 10px; border-radius: 10px; }
-.resolved-tag.stopped { background: rgba(255,71,87,0.14); color: #FF8394; border: 1px solid rgba(255,71,87,0.4); }
-.resolved-tag.closed-clean { background: rgba(41,211,152,0.14); color: #5DE8BC; border: 1px solid rgba(41,211,152,0.4); }
+.resolved-tag.stopped { background: rgba(255,71,87,0.14); color: var(--text-red); border: 1px solid rgba(255,71,87,0.4); }
+.resolved-tag.closed-clean { background: rgba(41,211,152,0.14); color: var(--text-green); border: 1px solid rgba(41,211,152,0.4); }
 
 .closed-banner { margin: 4px 0 14px; background: linear-gradient(135deg, #FF4757, #D6293D); border: 2px solid #FFD23F; border-radius: 14px; padding: 18px 18px; display: none; }
 .closed-banner.show { display: block; }
@@ -356,7 +390,7 @@ h1 {
 
 .reset-btn {
   display: block; width: 100%; margin: 22px auto 0;
-  background: rgba(255,71,87,0.1); border: 1.5px solid rgba(255,71,87,0.5); color: #FF8394;
+  background: rgba(255,71,87,0.1); border: 1.5px solid rgba(255,71,87,0.5); color: var(--text-red);
   font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 14px;
   padding: 13px 16px; border-radius: 12px; cursor: pointer;
   transition: background 0.2s ease, transform 0.15s ease;
@@ -554,8 +588,8 @@ h1 {
   user-select: none;
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
-.direction-btn.up.selected { background: linear-gradient(135deg, rgba(41,211,152,0.25), rgba(29,169,122,0.16)); border-color: rgba(41,211,152,0.55); color: #5DE8BC; font-weight: 700; }
-.direction-btn.down.selected { background: linear-gradient(135deg, rgba(255,71,87,0.25), rgba(230,41,75,0.16)); border-color: rgba(255,71,87,0.55); color: #FF8394; font-weight: 700; }
+.direction-btn.up.selected { background: linear-gradient(135deg, rgba(41,211,152,0.25), rgba(29,169,122,0.16)); border-color: rgba(41,211,152,0.55); color: var(--text-green); font-weight: 700; }
+.direction-btn.down.selected { background: linear-gradient(135deg, rgba(255,71,87,0.25), rgba(230,41,75,0.16)); border-color: rgba(255,71,87,0.55); color: var(--text-red); font-weight: 700; }
 
 .option-grid { display: grid; gap: 6px; }
 
@@ -595,8 +629,8 @@ h1 {
 .cs-right { display: flex; align-items: center; justify-content: flex-start; gap: 0; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; flex: 0 0 176px; }
 .cs-right .dir-up, .cs-right .dir-down, .cs-right .dir-na { flex: 0 0 52px; text-align: left; }
 .cs-right .dir-na { color: var(--text-dim); font-weight: 400; }
-.cs-right .dir-up { color: #5DE8BC; }
-.cs-right .dir-down { color: #FF8394; }
+.cs-right .dir-up { color: var(--text-green); }
+.cs-right .dir-down { color: var(--text-red); }
 .cs-right .cs-dot { flex: 0 0 14px; text-align: center; color: var(--text-muted); }
 .cs-right .cs-value { flex: 1; min-width: 0; text-align: left; color: var(--text-body); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -790,6 +824,10 @@ function freshTrends() {
 // Transient UI state: which confirmed condition blocks are manually re-opened for editing.
 // Not persisted — resets on reload, which is fine since confirmed items just show collapsed again.
 let uiExpanded = {};
+
+// Transient UI state: per-trade reset confirmation ("tap again to confirm"), and its auto-disarm timers.
+let resetArmed = {};
+let resetArmTimers = {};
 
 let state = {
   premarket: freshPremarket(),
@@ -1015,7 +1053,53 @@ function renderTrades() {
     else if (dayJustEnded && lockReason === 'profit') { badgeClass = ' go'; badgeText = 'NICE WORK'; }
     else if (allGo) { badgeClass = ' go'; badgeText = 'GO'; }
     else if (notAligned) { badgeClass = ' not-aligned'; badgeText = 'NOT ALIGNED'; }
-    head.innerHTML = '<span class="trade-name">Trade ' + (i + 1) + '</span><span class="badge' + badgeClass + '">' + badgeText + '</span>';
+
+    const nameWrap = document.createElement('div');
+    nameWrap.className = 'trade-name-wrap';
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'trade-name';
+    nameSpan.textContent = 'Trade ' + (i + 1);
+    nameWrap.appendChild(nameSpan);
+
+    const hasAnyData = confirmedCount > 0 || trade.outcome !== null || trade.stopPoints !== '40' || trade.targetPoints !== '60';
+    if (hasAnyData) {
+      const resetKey = 'reset:' + i;
+      const isArmed = resetArmed[resetKey] === true;
+
+      const resetBtn = document.createElement('span');
+      resetBtn.className = 'trade-reset-btn' + (isArmed ? ' armed' : '');
+      resetBtn.title = isArmed ? 'Tap again to confirm reset' : 'Reset this trade';
+      resetBtn.innerHTML = isArmed ? 'Confirm?' : '&#8635;';
+      resetBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!isArmed) {
+          resetArmed[resetKey] = true;
+          if (resetArmTimers[resetKey]) clearTimeout(resetArmTimers[resetKey]);
+          resetArmTimers[resetKey] = setTimeout(() => {
+            delete resetArmed[resetKey];
+            renderTrades();
+          }, 4000);
+          renderTrades();
+          return;
+        }
+        if (resetArmTimers[resetKey]) clearTimeout(resetArmTimers[resetKey]);
+        delete resetArmed[resetKey];
+        state.trades[i] = freshTrade();
+        Object.keys(uiExpanded).forEach(k => {
+          if (k.startsWith(i + ':')) delete uiExpanded[k];
+        });
+        saveState();
+        render();
+      });
+      nameWrap.appendChild(resetBtn);
+    }
+
+    const badgeSpan = document.createElement('span');
+    badgeSpan.className = 'badge' + badgeClass;
+    badgeSpan.textContent = badgeText;
+
+    head.appendChild(nameWrap);
+    head.appendChild(badgeSpan);
     card.appendChild(head);
 
     if (dayJustEnded) {
