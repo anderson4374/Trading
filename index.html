@@ -932,7 +932,7 @@ const CONDITIONS = [
   { key: 'zone', label: 'Zone', options: ['15m Floor', '15m Roof', '15m BuyZone', '15m SellZone', '1H Floor', '1H Roof', '1H BuyZone', '1H SellZone'], cols: 2 },
   { key: 'sma20', label: 'SMA20', options: ['Near', 'Away'], cols: 2 },
   { key: 'sma200', label: 'SMA200', options: ['Near', 'Away'], cols: 2 },
-  { key: 'signal', label: 'Signal', options: ['Tail bar', '180', 'None'], cols: 3 },
+  { key: 'signal', label: 'Signal', options: ['Tail bar', '180', 'Elephant', 'None'], cols: 2 },
 ];
 
 const DIRECTION_OPTIONS = ['Up', 'Down'];
@@ -1803,7 +1803,7 @@ const ZONE_TO_JOURNAL = {
   '1H Floor': '1h Floor', '1H Roof': '1h Roof',
   '1H BuyZone': '1h BZ', '1H SellZone': '1h SZ'
 };
-const SIGNAL_TO_JOURNAL = { 'Tail bar': 'Tail', '180': '180', 'None': 'None' };
+const SIGNAL_TO_JOURNAL = { 'Tail bar': 'Tail', '180': '180', 'Elephant': 'Elephant', 'None': 'None' };
 
 function computeTradeAlignment(trade) {
   const confirmedCount = CONDITIONS.filter(c => isItemAnswered(trade, c)).length;
