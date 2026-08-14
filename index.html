@@ -1024,7 +1024,7 @@ let state = {
   trades: [freshTrade(), freshTrade(), freshTrade()],
   extraTrades: [],
   report: {
-    volume: null, volatility: null, continuity: null, tradingSession: '', news: ''
+    volume: null, volatility: null, continuity: null, tradingSession: '9:30–10:30am', news: ''
   }
 };
 
@@ -1039,13 +1039,13 @@ async function loadState() {
       if (parsed.premarket && parsed.trades && tradesLookValid) {
         state = parsed;
         if (!state.report) {
-          state.report = { volume: null, volatility: null, continuity: null, tradingSession: '', news: '' };
+          state.report = { volume: null, volatility: null, continuity: null, tradingSession: '9:30–10:30am', news: '' };
         }
         if (state.report.trades) {
           delete state.report.trades;
         }
         if (state.report.tradingSession === undefined) {
-          state.report.tradingSession = '';
+          state.report.tradingSession = '9:30\u201310:30am';
         }
         if (!state.trends) {
           state.trends = freshTrends();
@@ -2001,7 +2001,7 @@ function resetFullSession() {
     trends: freshTrends(),
     trades: [freshTrade(), freshTrade(), freshTrade()],
     extraTrades: [],
-    report: { volume: null, volatility: null, continuity: null, tradingSession: '', news: '' }
+    report: { volume: null, volatility: null, continuity: null, tradingSession: '9:30–10:30am', news: '' }
   };
   uiExpanded = {};
   saveState();
