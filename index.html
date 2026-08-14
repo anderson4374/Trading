@@ -663,6 +663,7 @@ h1 {
   resize: vertical;
 }
 .news-input::placeholder { color: var(--text-dim); }
+.session-input { min-height: unset; padding: 12px; }
 
 .condition-block {
   background: linear-gradient(145deg, var(--card-nested-a), var(--card-nested-b));
@@ -901,6 +902,10 @@ h1 {
         <div class="pill-row two" id="continuityRow"></div>
       </div>
       <div class="field-group">
+        <span class="field-label">Trading Session</span>
+        <input type="text" class="news-input session-input" id="sessionInput" placeholder="e.g. 9:30\u201310:30am">
+      </div>
+      <div class="field-group">
         <span class="field-label">News</span>
         <textarea class="news-input" id="newsInput" placeholder="Any scheduled news today?"></textarea>
       </div>
@@ -915,8 +920,8 @@ h1 {
 <div class="floating-clock" id="floatingClock">--:--:--</div>
 
 <div class="tab-bar">
-  <div class="tab-btn active" id="tabBtnChecklist">Checklist</div>
-  <div class="tab-btn" id="tabBtnReport">Report</div>
+  <div class="tab-btn active" id="tabBtnChecklist">Trades</div>
+  <div class="tab-btn" id="tabBtnReport">Day</div>
 </div>
 
 <script>
@@ -1019,7 +1024,7 @@ let state = {
   trades: [freshTrade(), freshTrade(), freshTrade()],
   extraTrades: [],
   report: {
-    volume: null, volatility: null, continuity: null, news: ''
+    volume: null, volatility: null, continuity: null, tradingSession: '', news: ''
   }
 };
 
@@ -1034,10 +1039,13 @@ async function loadState() {
       if (parsed.premarket && parsed.trades && tradesLookValid) {
         state = parsed;
         if (!state.report) {
-          state.report = { volume: null, volatility: null, continuity: null, news: '' };
+          state.report = { volume: null, volatility: null, continuity: null, tradingSession: '', news: '' };
         }
         if (state.report.trades) {
           delete state.report.trades;
+        }
+        if (state.report.tradingSession === undefined) {
+          state.report.tradingSession = '';
         }
         if (!state.trends) {
           state.trends = freshTrends();
@@ -1765,6 +1773,11 @@ function renderReport() {
   if (document.activeElement !== newsInput) {
     newsInput.value = state.report.news || '';
   }
+
+  const sessionInput = document.getElementById('sessionInput');
+  if (document.activeElement !== sessionInput) {
+    sessionInput.value = state.report.tradingSession || '';
+  }
 }
 
 function render() {
@@ -1787,8 +1800,8 @@ const TRADE_LOG_HEADERS = [
   '#', 'Date', 'Week', 'Account', 'Capital', 'Symbol', 'Qty', 'Entry', 'Exit',
   'Entry Time', 'Exit Time', 'Direction', 'Fee', 'Net P&L', '% P&L',
   '1h Trend', '15m Trend', 'Zone Direction', 'Signal Direction', 'SMA20 Direction', 'SMA200 Direction',
-  'Zone', 'Signal', 'SMA20', 'SMA200', 'Respected?', 'Stop Pts', 'Target Pts',
-  'Stop adjustment', 'Real R:R', 'Respected?2', 'Strategy respected?',
+  'Zone', 'Signal', 'SMA20', 'SMA200', 'Entry Respected?', 'Stop Pts', 'Target Pts',
+  'Stop adjustment', 'Real R:R', 'Exit Respected?', 'Strategy respected?',
   'Emotional State\n(Entry)', 'Rule Broken\n(if any)', 'Comments'
 ];
 
@@ -1863,12 +1876,12 @@ function buildTradeLogRow(trade, dateStr, ruleBrokenNote) {
     signalVal,                       // Signal
     trade.sma20.value || '',         // SMA20
     trade.sma200.value || '',        // SMA200
-    '',                              // Respected? (left for you/broker-side reconciliation)
+    '',                              // Entry Respected? (left for you/broker-side reconciliation)
     stopPts,                         // Stop Pts
     targetPts,                       // Target Pts
     '',                              // Stop adjustment
     realRR,                          // Real R:R
-    '',                              // Respected?2
+    '',                              // Exit Respected?
     strategyRespected,               // Strategy respected?
     '',                              // Emotional State (Entry)
     ruleBrokenNote || '',            // Rule Broken (if any)
@@ -1935,7 +1948,7 @@ function buildJournalCSV() {
     hasExtras ? 'Yes' : 'No',                    // Any Breach?
     (stopLocked && hasExtras) ? 'Yes' : 'No',    // Post-2-Stop Continued?
     (profitLocked && hasExtras) ? 'Yes' : 'No',  // Post-2-Win Continued?
-    '',                                          // Trading session
+    state.report.tradingSession || '',           // Trading session
     '',                                          // MLPD
     '',                                          // Emotion
     hasExtras ? 'No' : 'Yes'                     // Followed Plan?
@@ -1977,13 +1990,18 @@ document.getElementById('newsInput').addEventListener('input', (e) => {
   saveState();
 });
 
+document.getElementById('sessionInput').addEventListener('input', (e) => {
+  state.report.tradingSession = e.target.value;
+  saveState();
+});
+
 function resetFullSession() {
   state = {
     premarket: freshPremarket(),
     trends: freshTrends(),
     trades: [freshTrade(), freshTrade(), freshTrade()],
     extraTrades: [],
-    report: { volume: null, volatility: null, continuity: null, news: '' }
+    report: { volume: null, volatility: null, continuity: null, tradingSession: '', news: '' }
   };
   uiExpanded = {};
   saveState();
