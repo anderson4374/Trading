@@ -325,6 +325,10 @@ h1 {
 .pm-item.on .pm-label { color: var(--text-oncolor); }
 .pm-item.pending .pm-label { color: var(--text-muted); }
 
+.pm-toolbar { display: flex; justify-content: flex-end; gap: 14px; margin-bottom: 10px; }
+.pm-toolbar-btn { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: var(--accent-teal); cursor: pointer; user-select: none; }
+.pm-toolbar-btn:active { opacity: 0.6; }
+
 .trades-lockwrap.locked { opacity: 0.3; pointer-events: none; }
 
 .extra-trades-header { margin-bottom: 10px; }
@@ -454,6 +458,31 @@ h1 {
   line-height: 1.5;
   margin-bottom: 14px;
 }
+
+.trade-trend-row {
+  background: var(--surface-1);
+  border: 1px solid var(--border-1);
+  border-radius: 10px;
+  padding: 9px 12px;
+  margin-bottom: 14px;
+}
+.trade-trend-row.custom { border-color: rgba(45,225,252,0.45); background: rgba(45,225,252,0.08); }
+.trade-trend-summary { display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+.tt-left { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.tt-key { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+.tt-val { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 12.5px; color: var(--text-body); margin-right: 4px; }
+.tt-val.up { color: var(--text-green); }
+.tt-val.down { color: var(--text-red); }
+.tt-val.neutral { color: var(--text-amber); }
+.tt-val.empty { color: var(--text-dim); font-weight: 400; }
+.tt-custom-tag { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; font-weight: 700; color: #2DE1FC; background: rgba(45,225,252,0.14); border: 1px solid rgba(45,225,252,0.4); border-radius: 999px; padding: 2px 7px; text-transform: uppercase; letter-spacing: 0.04em; }
+.tt-edit-link { font-size: 11.5px; font-weight: 600; color: var(--accent-teal); flex-shrink: 0; }
+.trade-trend-body { padding-top: 4px; }
+.tt-group { margin-bottom: 10px; }
+.tt-group:last-of-type { margin-bottom: 8px; }
+.tt-actions { display: flex; justify-content: flex-end; align-items: center; gap: 16px; }
+.tt-reset-link { font-size: 11.5px; font-weight: 600; color: var(--text-muted); cursor: pointer; user-select: none; }
+.tt-done-btn { font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 700; color: var(--accent-teal); cursor: pointer; user-select: none; }
 
 .chips { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
 .chip {
@@ -937,7 +966,7 @@ const PREMARKET_ITEMS = [
 ];
 
 const CONDITIONS = [
-  { key: 'zone', label: 'Zone', options: ['15m Floor', '15m Roof', '15m BuyZone', '15m SellZone', '1H Floor', '1H Roof', '1H BuyZone', '1H SellZone'], cols: 2 },
+  { key: 'zone', label: 'Zone', options: ['15m Floor', '15m Roof', '15m BuyZone', '15m SellZone', '1H Floor', '1H Roof', '1H BuyZone', '1H SellZone', 'None'], cols: 2 },
   { key: 'sma20', label: 'SMA20', options: ['Near', 'Away'], cols: 2 },
   { key: 'sma200', label: 'SMA200', options: ['Near', 'Away'], cols: 2 },
   { key: 'signal', label: 'Signal', options: ['Tail bar', '180', 'Elephant', 'None'], cols: 2 },
@@ -951,8 +980,8 @@ function arrowLabel(v) {
 }
 
 const ZONE_OPTIONS_BY_DIRECTION = {
-  Up: ['15m Floor', '15m BuyZone', '1H Floor', '1H BuyZone'],
-  Down: ['15m Roof', '15m SellZone', '1H Roof', '1H SellZone'],
+  Up: ['15m Floor', '15m BuyZone', '1H Floor', '1H BuyZone', 'None'],
+  Down: ['15m Roof', '15m SellZone', '1H Roof', '1H SellZone', 'None'],
 };
 
 function optionsFor(c, direction) {
@@ -964,7 +993,7 @@ function optionsFor(c, direction) {
 
 function isItemAnswered(trade, c) {
   const cs = trade[c.key];
-  if (c.key === 'signal' && cs.value === 'None' && cs.direction === null) return true;
+  if ((c.key === 'signal' || c.key === 'zone') && cs.value === 'None' && cs.direction === null) return true;
   return cs.value !== null && cs.direction !== null;
 }
 
@@ -998,7 +1027,11 @@ function freshTrade() {
     signal: freshConditionState(),
     stopPoints: '40',
     targetPoints: '60',
-    outcome: null
+    outcome: null,
+    h1: null,
+    m15: null,
+    h1Custom: false,
+    m15Custom: false
   };
 }
 function freshPremarket() {
@@ -1008,6 +1041,32 @@ function freshPremarket() {
 }
 function freshTrends() {
   return { h1: null, m15: null };
+}
+
+// A trade created mid-day (extra trade, or a reset trade slot) should start
+// with today's already-selected trend rather than blank — it only diverges
+// from the day default once the user explicitly overrides it for that trade.
+function newTradeWithCurrentTrends() {
+  const t = freshTrade();
+  t.h1 = state.trends.h1;
+  t.m15 = state.trends.m15;
+  return t;
+}
+
+// Pushes the day-level trend into every trade that hasn't been individually
+// overridden. Called whenever the top Trends card changes.
+function syncAllTrendsFromGlobal() {
+  state.trades.concat(state.extraTrades).forEach(t => {
+    if (!t.h1Custom) t.h1 = state.trends.h1;
+    if (!t.m15Custom) t.m15 = state.trends.m15;
+  });
+}
+
+function ensureTradeTrendFields(t) {
+  if (!('h1' in t)) t.h1 = null;
+  if (!('m15' in t)) t.m15 = null;
+  if (!('h1Custom' in t)) t.h1Custom = false;
+  if (!('m15Custom' in t)) t.m15Custom = false;
 }
 
 // Transient UI state: which confirmed condition blocks are manually re-opened for editing.
@@ -1053,6 +1112,9 @@ async function loadState() {
         if (!Array.isArray(state.extraTrades) || !state.extraTrades.every(t => t && t.zone && typeof t.zone === 'object' && 'value' in t.zone)) {
           state.extraTrades = [];
         }
+        state.trades.forEach(ensureTradeTrendFields);
+        state.extraTrades.forEach(ensureTradeTrendFields);
+        syncAllTrendsFromGlobal();
       }
     }
   } catch (e) {
@@ -1105,6 +1167,29 @@ function renderPremarket() {
     card.appendChild(summary);
     return;
   }
+
+  const toolbar = document.createElement('div');
+  toolbar.className = 'pm-toolbar';
+  const checkAllBtn = document.createElement('span');
+  checkAllBtn.className = 'pm-toolbar-btn';
+  checkAllBtn.textContent = 'Check all';
+  checkAllBtn.addEventListener('click', () => {
+    PREMARKET_ITEMS.forEach(item => { state.premarket[item.key] = true; });
+    uiExpanded['premarket'] = false;
+    saveState();
+    render();
+  });
+  const uncheckAllBtn = document.createElement('span');
+  uncheckAllBtn.className = 'pm-toolbar-btn';
+  uncheckAllBtn.textContent = 'Uncheck all';
+  uncheckAllBtn.addEventListener('click', () => {
+    PREMARKET_ITEMS.forEach(item => { state.premarket[item.key] = false; });
+    saveState();
+    render();
+  });
+  toolbar.appendChild(checkAllBtn);
+  toolbar.appendChild(uncheckAllBtn);
+  card.appendChild(toolbar);
 
   PREMARKET_ITEMS.forEach((item, idx) => {
     const priorConfirmed = PREMARKET_ITEMS.slice(0, idx).every(prev => state.premarket[prev.key]);
@@ -1193,6 +1278,7 @@ function renderTrendCard() {
           state.trends[later.key] = null;
           delete uiExpanded['trend:' + later.key];
         });
+        syncAllTrendsFromGlobal();
         if (state.trends[t.key] !== null) {
           uiExpanded[uiKey] = false;
         }
@@ -1321,6 +1407,98 @@ function renderConditionsInto(card, trade, uiKeyPrefix, checklistLocked, onChang
   });
 }
 
+// Compact per-trade trend display/override. Defaults to the day's Trends card
+// value; tapping Edit lets the user set a different 1H/15m trend just for
+// this one trade (e.g. the trend flipped between trade 1 and trade 2).
+function renderTradeTrendRow(card, trade, uiKeyPrefix, locked, onChange) {
+  const uiKey = uiKeyPrefix + ':trendOverride';
+  const showEditing = !locked && uiExpanded[uiKey] === true;
+  const isCustom = trade.h1Custom || trade.m15Custom;
+
+  const valHtml = (val) => val
+    ? '<span class="tt-val ' + val.toLowerCase() + '">' + arrowLabel(val) + '</span>'
+    : '<span class="tt-val empty">&mdash;</span>';
+
+  const row = document.createElement('div');
+  row.className = 'trade-trend-row' + (isCustom ? ' custom' : '');
+
+  if (!showEditing) {
+    const summary = document.createElement('div');
+    summary.className = 'trade-trend-summary';
+    summary.innerHTML =
+      '<span class="tt-left"><span class="tt-key">1H</span>' + valHtml(trade.h1) +
+      '<span class="tt-key">15m</span>' + valHtml(trade.m15) +
+      (isCustom ? '<span class="tt-custom-tag">Custom</span>' : '') + '</span>' +
+      (locked ? '' : '<span class="tt-edit-link">Edit</span>');
+    if (!locked) {
+      summary.addEventListener('click', () => {
+        uiExpanded[uiKey] = true;
+        onChange();
+      });
+    }
+    row.appendChild(summary);
+    card.appendChild(row);
+    return;
+  }
+
+  const body = document.createElement('div');
+  body.className = 'trade-trend-body';
+
+  TREND_CONDITIONS.forEach(t => {
+    const group = document.createElement('div');
+    group.className = 'tt-group';
+    const label = document.createElement('span');
+    label.className = 'col-label';
+    label.textContent = t.label;
+    group.appendChild(label);
+    const opts = document.createElement('div');
+    opts.className = 'trend-options';
+    t.options.forEach(opt => {
+      const btn = document.createElement('div');
+      btn.className = 'trend-btn ' + opt.toLowerCase() + (trade[t.key] === opt ? ' selected' : '');
+      btn.innerHTML = arrowLabel(opt);
+      btn.addEventListener('click', () => {
+        trade[t.key] = opt;
+        trade[t.key + 'Custom'] = true;
+        saveState();
+        onChange();
+      });
+      opts.appendChild(btn);
+    });
+    group.appendChild(opts);
+    body.appendChild(group);
+  });
+
+  const actions = document.createElement('div');
+  actions.className = 'tt-actions';
+  if (isCustom) {
+    const resetLink = document.createElement('span');
+    resetLink.className = 'tt-reset-link';
+    resetLink.textContent = 'Use day default';
+    resetLink.addEventListener('click', () => {
+      trade.h1 = state.trends.h1;
+      trade.h1Custom = false;
+      trade.m15 = state.trends.m15;
+      trade.m15Custom = false;
+      saveState();
+      onChange();
+    });
+    actions.appendChild(resetLink);
+  }
+  const doneBtn = document.createElement('span');
+  doneBtn.className = 'tt-done-btn';
+  doneBtn.textContent = 'Done';
+  doneBtn.addEventListener('click', () => {
+    uiExpanded[uiKey] = false;
+    onChange();
+  });
+  actions.appendChild(doneBtn);
+  body.appendChild(actions);
+
+  row.appendChild(body);
+  card.appendChild(row);
+}
+
 function renderTrades() {
   const container = document.getElementById('trades');
   container.innerHTML = '';
@@ -1350,7 +1528,7 @@ function renderTrades() {
       majorityDir = upCount >= 3 ? 'Up' : (downCount >= 3 ? 'Down' : null);
       unanimous = upCount === 4 || downCount === 4;
       if (majorityDir) {
-        aligned = unanimous || state.trends.h1 === majorityDir || state.trends.m15 === majorityDir;
+        aligned = unanimous || trade.h1 === majorityDir || trade.m15 === majorityDir;
       }
     }
 
@@ -1414,7 +1592,7 @@ function renderTrades() {
         }
         if (resetArmTimers[resetKey]) clearTimeout(resetArmTimers[resetKey]);
         delete resetArmed[resetKey];
-        state.trades[i] = freshTrade();
+        state.trades[i] = newTradeWithCurrentTrends();
         Object.keys(uiExpanded).forEach(k => {
           if (k.startsWith(i + ':')) delete uiExpanded[k];
         });
@@ -1448,6 +1626,7 @@ function renderTrades() {
 
     const checklistLocked = trade.outcome !== null || cardAwaiting;
 
+    renderTradeTrendRow(card, trade, i + '', checklistLocked, renderTrades);
     renderConditionsInto(card, trade, i + '', checklistLocked, renderTrades);
 
     if (notAligned) {
@@ -1570,7 +1749,7 @@ function renderExtraTrades() {
       const majorityDir = upCount >= 3 ? 'Up' : (downCount >= 3 ? 'Down' : null);
       const unanimous = upCount === 4 || downCount === 4;
       if (majorityDir) {
-        aligned = unanimous || state.trends.h1 === majorityDir || state.trends.m15 === majorityDir;
+        aligned = unanimous || trade.h1 === majorityDir || trade.m15 === majorityDir;
       }
     }
     const canResolve = allFilled;
@@ -1639,6 +1818,7 @@ function renderExtraTrades() {
     card.appendChild(head);
 
     const checklistLocked = trade.outcome !== null;
+    renderTradeTrendRow(card, trade, 'extra' + i, checklistLocked, renderExtraTrades);
     renderConditionsInto(card, trade, 'extra' + i, checklistLocked, renderExtraTrades);
 
     if (trade.outcome === null) {
@@ -1790,7 +1970,7 @@ function render() {
 }
 
 document.getElementById('addExtraTradeBtn').addEventListener('click', () => {
-  state.extraTrades.push(freshTrade());
+  state.extraTrades.push(newTradeWithCurrentTrends());
   saveState();
   render();
 });
@@ -1817,7 +1997,8 @@ const ZONE_TO_JOURNAL = {
   '15m Floor': '15m Floor', '15m Roof': '15m Roof',
   '15m BuyZone': '15m BZ', '15m SellZone': '15m SZ',
   '1H Floor': '1h Floor', '1H Roof': '1h Roof',
-  '1H BuyZone': '1h BZ', '1H SellZone': '1h SZ'
+  '1H BuyZone': '1h BZ', '1H SellZone': '1h SZ',
+  'None': 'None'
 };
 const SIGNAL_TO_JOURNAL = { 'Tail bar': 'Tail', '180': '180', 'Elephant': 'Elephant', 'None': 'None' };
 
@@ -1831,7 +2012,7 @@ function computeTradeAlignment(trade) {
   const majorityDir = upCount >= 3 ? 'Up' : (downCount >= 3 ? 'Down' : null);
   const unanimous = upCount === 4 || downCount === 4;
   if (!majorityDir) return { aligned: false, majorityDir: null };
-  const aligned = unanimous || state.trends.h1 === majorityDir || state.trends.m15 === majorityDir;
+  const aligned = unanimous || trade.h1 === majorityDir || trade.m15 === majorityDir;
   return { aligned, majorityDir };
 }
 
@@ -1866,8 +2047,8 @@ function buildTradeLogRow(trade, dateStr, ruleBrokenNote) {
     '',                              // Fee (broker import)
     '',                              // Net P&L (broker import)
     '',                              // % P&L (broker import)
-    state.trends.h1 || '',           // 1h Trend
-    state.trends.m15 || '',          // 15m Trend
+    trade.h1 || '',                  // 1h Trend
+    trade.m15 || '',                 // 15m Trend
     trade.zone.direction || '',      // Zone Direction
     trade.signal.direction || '',    // Signal Direction
     trade.sma20.direction || '',     // SMA20 Direction
