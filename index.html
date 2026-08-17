@@ -458,6 +458,24 @@ h1 {
   line-height: 1.5;
   margin-bottom: 14px;
 }
+.align-note-action { margin-top: 8px; }
+.align-note-link {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px; font-weight: 700;
+  color: #FFA669;
+  text-decoration: underline;
+  cursor: pointer;
+  user-select: none;
+}
+.align-note-forced {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,138,61,0.25);
+  font-size: 12px;
+  font-style: italic;
+  color: #FFA669;
+  opacity: 0.9;
+}
 
 .trade-trend-row {
   background: var(--surface-1);
@@ -1028,6 +1046,7 @@ function freshTrade() {
     stopPoints: '40',
     targetPoints: '60',
     outcome: null,
+    forcedEntry: false,
     h1: null,
     m15: null,
     h1Custom: false,
@@ -1560,6 +1579,7 @@ function renderTrades() {
     else if (dayJustEnded && lockReason === 'stop') { badgeClass = ' locked'; badgeText = 'SESSION CLOSED'; }
     else if (dayJustEnded && lockReason === 'profit') { badgeClass = ' go'; badgeText = 'NICE WORK'; }
     else if (allGo) { badgeClass = ' go'; badgeText = 'GO'; }
+    else if (notAligned && trade.forcedEntry) { badgeClass = ' not-aligned'; badgeText = 'OFF-PLAN'; }
     else if (notAligned) { badgeClass = ' not-aligned'; badgeText = 'NOT ALIGNED'; }
 
     const nameWrap = document.createElement('div');
@@ -1629,23 +1649,50 @@ function renderTrades() {
     renderTradeTrendRow(card, trade, i + '', checklistLocked, renderTrades);
     renderConditionsInto(card, trade, i + '', checklistLocked, renderTrades);
 
-    if (notAligned) {
+    if (notAligned && trade.outcome === null) {
       const note = document.createElement('div');
       note.className = 'align-note';
       const dirs = CONDITIONS.map(c => trade[c.key].direction);
       const upCount = dirs.filter(d => d === 'Up').length;
       const downCount = dirs.filter(d => d === 'Down').length;
+      const textLine = document.createElement('div');
       if (!majorityDir) {
-        note.textContent = 'Entry items split ' + upCount + '/' + downCount + ' \u2014 need at least 3 of 4 pointing the same way.';
+        textLine.textContent = 'Entry items split ' + upCount + '/' + downCount + ' \u2014 need at least 3 of 4 pointing the same way.';
       } else {
         const dirDisplay = arrowLabel(majorityDir).replace('&#8593;', '\u2191').replace('&#8595;', '\u2193');
-        note.textContent = dirDisplay + ' has ' + Math.max(upCount, downCount) + ' of 4 entry items, but neither trend confirms ' + dirDisplay + ' \u2014 no trade.';
+        textLine.textContent = dirDisplay + ' has ' + Math.max(upCount, downCount) + ' of 4 entry items, but neither trend confirms ' + dirDisplay + ' \u2014 no trade.';
       }
+      note.appendChild(textLine);
+
+      if (!cardAwaiting) {
+        const actionRow = document.createElement('div');
+        actionRow.className = 'align-note-action';
+        const actionLink = document.createElement('span');
+        actionLink.className = 'align-note-link';
+        actionLink.textContent = trade.forcedEntry ? 'Follow the plan instead' : 'Take this trade anyway';
+        actionLink.addEventListener('click', () => {
+          trade.forcedEntry = !trade.forcedEntry;
+          saveState();
+          renderTrades();
+        });
+        actionRow.appendChild(actionLink);
+        note.appendChild(actionRow);
+      }
+
+      if (trade.forcedEntry) {
+        const forcedTag = document.createElement('div');
+        forcedTag.className = 'align-note-forced';
+        forcedTag.textContent = 'Logging this off-plan \u2014 it will count against your compliance score.';
+        note.appendChild(forcedTag);
+      }
+
       card.appendChild(note);
     }
 
     if (trade.outcome === null) {
-      if (allGo && !cardAwaiting) {
+      const canResolve = (allGo || (notAligned && trade.forcedEntry)) && !cardAwaiting;
+
+      if (canResolve) {
         const priceRow = document.createElement('div');
         priceRow.className = 'price-row';
 
@@ -1680,7 +1727,6 @@ function renderTrades() {
 
       const row = document.createElement('div');
       row.className = 'resolve-row';
-      const canResolve = allGo && !cardAwaiting;
 
       const stopBtn = document.createElement('div');
       stopBtn.className = 'resolve-btn stop-btn' + (canResolve ? '' : ' awaiting-entry');
@@ -1711,6 +1757,9 @@ function renderTrades() {
       let tagText = trade.outcome === 'stopped' ? 'Stop ' + (state.trades.slice(0, i + 1).filter(t => t.outcome === 'stopped').length) + ' of 2 logged' : 'Profit logged';
       if (trade.stopPoints || trade.targetPoints) {
         tagText += '  ·  Stop ' + (trade.stopPoints ? trade.stopPoints + 'pts' : '&mdash;') + ' / Target ' + (trade.targetPoints ? trade.targetPoints + 'pts' : '&mdash;');
+      }
+      if (trade.forcedEntry) {
+        tagText += '  ·  Off-plan (not aligned)';
       }
       tag.innerHTML = tagText;
       card.appendChild(tag);
