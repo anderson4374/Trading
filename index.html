@@ -1808,8 +1808,7 @@ function renderExtraTrades() {
 
     const tag = document.createElement('div');
     tag.className = 'extra-trade-tag';
-    tag.textContent = 'OFF-PROTOCOL &middot; TRADE ' + (i + 4);
-    tag.innerHTML = 'OFF-PROTOCOL &middot; TRADE ' + (i + 4);
+    tag.textContent = 'OFF-PROTOCOL';
     card.appendChild(tag);
 
     const head = document.createElement('div');
@@ -1823,7 +1822,7 @@ function renderExtraTrades() {
     nameWrap.className = 'trade-name-wrap';
     const nameSpan = document.createElement('span');
     nameSpan.className = 'trade-name';
-    nameSpan.textContent = 'Extra Trade ' + (i + 1);
+    nameSpan.textContent = 'Trade ' + (i + 4);
     nameWrap.appendChild(nameSpan);
 
     const resetKey = 'extrareset:' + i;
