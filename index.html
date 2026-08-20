@@ -1783,6 +1783,11 @@ function renderExtraTrades() {
 
   container.innerHTML = '';
 
+  // Off-protocol trades continue the day's running trade count. Official slots
+  // that got locked out before ever being taken (e.g. trade 3 after 2 stops)
+  // don't count — so if trade 3 never happened, the next one taken is "Trade 3".
+  const resolvedOfficialCount = state.trades.filter(t => t.outcome !== null).length;
+
   state.extraTrades.forEach((trade, i) => {
     const confirmedCount = CONDITIONS.filter(c => isItemAnswered(trade, c)).length;
     const allFilled = confirmedCount === CONDITIONS.length;
@@ -1822,7 +1827,7 @@ function renderExtraTrades() {
     nameWrap.className = 'trade-name-wrap';
     const nameSpan = document.createElement('span');
     nameSpan.className = 'trade-name';
-    nameSpan.textContent = 'Trade ' + (i + 4);
+    nameSpan.textContent = 'Trade ' + (resolvedOfficialCount + i + 1);
     nameWrap.appendChild(nameSpan);
 
     const resetKey = 'extrareset:' + i;
